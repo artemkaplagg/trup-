@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragment - Вхід</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .info-box {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-box-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-box-text {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .telegram-login-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            min-height: 40px;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .status {
+            text-align: center;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .status.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            color: #4caf50;
+        }
+
+        .status.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+
+        .status.processing {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+        }
+
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .features {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: start;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            min-width: 30px;
+        }
+
+        .feature-text {
+            font-size: 14px;
+            color: #ccc;
+        }
+
+        .withdraw-amount {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .withdraw-amount-label {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+
+        .withdraw-amount-value {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <div class="logo-icon">💎</div>
+            <div class="logo-text">Fragment</div>
+        </div>
+
+        <div class="card">
+            <h1 class="title">Вхід в систему</h1>
+            <p class="subtitle">Увійдіть через Telegram для виведення зірок</p>
+
+            <div class="info-box">
+                <div class="info-box-title">
+                    <span>💰</span>
+                    <span>Виведення зірок</span>
+                </div>
+                <div class="info-box-text">
+                    Після входу зірки будуть автоматично виведені на ваш Telegram аккаунт
+                </div>
+            </div>
+
+            <div id="withdrawAmount" class="withdraw-amount" style="display: none;">
+                <div class="withdraw-amount-label">Сума виведення</div>
+                <div class="withdraw-amount-value">
+                    <span id="amountValue">0</span> ⭐
+                </div>
+            </div>
+
+            <div class="telegram-login-container">
+                <button class="login-btn" onclick="loginWithTelegram()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+                    </svg>
+                    Увійти через Telegram
+                </button>
+            </div>
+
+            <div id="status" class="status"></div>
+
+            <div class="features">
+                <div class="feature-item">
+                    <div class="feature-icon">🔒</div>
+                    <div class="feature-text">
+                        <strong>Безпечно</strong><br>
+                        Використовуємо офіційний Telegram Login Widget
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-text">
+                        <strong>Миттєво</strong><br>
+                        Зірки надійдуть протягом 1-5 хвилин
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">💯</div>
+                    <div class="feature-text">
+                        <strong>Гарантія</strong><br>
+                        Повернення коштів при невдалому виведенні
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // Отримуємо дані про суму виведення з URL параметрів
+        const urlParams = new URLSearchParams(window.location.search);
+        const withdrawAmount = urlParams.get('amount');
+        
+        if (withdrawAmount) {
+            document.getElementById('withdrawAmount').style.display = 'block';
+            document.getElementById('amountValue').textContent = withdrawAmount;
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+            status.style.display = 'block';
+        }
+
+        function loginWithTelegram() {
+            showStatus('🔄 Виконується вхід...', 'processing');
+            
+            // Отримуємо дані користувача з Telegram WebApp
+            const user = tg.initDataUnsafe.user;
+            
+            if (!user) {
+                showStatus('❌ Помилка: не вдалося отримати дані користувача', 'error');
+                return;
+            }
+
+            // Відправляємо дані на сервер бота
+            setTimeout(() => {
+                showStatus('✅ Вхід виконано успішно!', 'success');
+                
+                // Симулюємо процес виведення
+                setTimeout(() => {
+                    showStatus('💸 Обробка виведення...', 'processing');
+                    
+                    setTimeout(() => {
+                        showStatus('✅ Виведення виконано! Зірки надійдуть протягом 5 хвилин', 'success');
+                        
+                        // Відправляємо результат боту
+                        tg.sendData(JSON.stringify({
+                            action: 'withdraw_completed',
+                            user_id: user.id,
+                            amount: withdrawAmount || 0,
+                            status: 'success'
+                        }));
+
+                        // Закриваємо WebApp через 3 секунди
+                        setTimeout(() => {
+                            tg.close();
+                        }, 3000);
+                    }, 2000);
+                }, 1500);
+            }, 1500);
+        }
+
+        // Автоматичний вхід при відкритті (опціонально)
+        // loginWithTelegram();
+    </script>
+</body>
+</html>
